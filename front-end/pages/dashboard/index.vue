@@ -768,39 +768,6 @@ const weeklyGoalPercent = computed(() => {
   return Math.round((weeklyGoal.completed / weeklyGoal.total) * 100);
 });
 
-const leaderboard = [
-  {
-    name: "Ananya S.",
-    rank: 1,
-    xp: 2140,
-    streak: 12,
-  },
-  {
-    name: "Rohan K.",
-    rank: 2,
-    xp: 1985,
-    streak: 9,
-  },
-  {
-    name: "Neha P.",
-    rank: 3,
-    xp: 1902,
-    streak: 7,
-  },
-  {
-    name: "Arjun M.",
-    rank: 4,
-    xp: 1760,
-    streak: 5,
-  },
-  {
-    name: "Sara V.",
-    rank: 5,
-    xp: 1715,
-    streak: 4,
-  },
-];
-
 const onSelectCourse = (id: string) => {
   selectedCourseId.value = id;
 };
@@ -906,6 +873,20 @@ const onLogout = async () => {
             Review now
           </NuxtLink>
         </div>
+
+        <NuxtLink to="/leaderboard" :class="$style['insight-card__cta']">
+          View Leaderboard
+          <svg width="20" height="12" viewBox="0 0 20 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M13.5 1L18 6L13.5 11"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path d="M2 6H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+        </NuxtLink>
       </div>
     </div>
 
@@ -1059,32 +1040,6 @@ const onLogout = async () => {
       </div>
     </section>
 
-    <section :class="$style.leaderboard">
-      <div class="container grid">
-        <header :class="$style['leaderboard-header']">
-          <h2>{{ UIElements.dashboard.leaderboardTitle }}</h2>
-          <p>{{ UIElements.dashboard.leaderboardUpdated }}</p>
-          <NuxtLink to="/leaderboard" :class="$style.link">
-            {{ UIElements.dashboard.leaderboardCta }}
-          </NuxtLink>
-        </header>
-
-        <ul :class="$style['leaderboard-list']">
-          <li v-for="player in leaderboard" :key="player.rank">
-            <div :class="$style['leaderboard-rank']">#{{ player.rank }}</div>
-            <div>
-              <span :class="$style['leaderboard-name']">{{ player.name }}</span>
-              <span :class="$style['leaderboard-streak']">
-                {{ UIElements.dashboard.activeDayStreak(player.streak) }}
-              </span>
-            </div>
-            <span :class="$style['leaderboard-xp']">
-              {{ UIElements.dashboard.xpLabel(player.xp) }}
-            </span>
-          </li>
-        </ul>
-      </div>
-    </section>
   </section>
 </template>
 
@@ -1255,6 +1210,44 @@ const onLogout = async () => {
     margin: 0.25rem 0 0 0;
     font-size: 0.9rem;
     opacity: 0.7;
+  }
+
+  &__cta {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+    padding: 0.65rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent-color, #ffd454) 35%, transparent);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent-color, #ffd454) 35%, transparent) 0%,
+      color-mix(in srgb, var(--accent-color, #ffd454) 18%, transparent) 100%
+    );
+    color: var(--foreground-color);
+    font-family: var(--display-font);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+
+    svg {
+      transition: transform 0.25s ease;
+    }
+
+    &:hover,
+    &:focus-visible {
+      transform: translate3d(0, -0.15rem, 0);
+      border-color: color-mix(in srgb, var(--accent-color, #ffd454) 55%, transparent);
+      box-shadow: 0 18px 35px color-mix(in srgb, var(--accent-color, #ffd454) 25%, transparent);
+
+      svg {
+        transform: translateX(4px);
+      }
+    }
   }
 }
 
@@ -1852,90 +1845,4 @@ const onLogout = async () => {
   border: 1px solid color-mix(in srgb, var(--foreground-color) 15%, transparent);
 }
 
-.leaderboard {
-  .container {
-    row-gap: calc(var(--gutter-size) * 2);
-  }
-}
-
-.leaderboard-header {
-  grid-column: 3 / 11;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-
-  @media screen and (max-aspect-ratio: 12 / 8) {
-    grid-column: 2 / 12;
-  }
-
-  @media screen and (orientation: portrait) {
-    grid-column: 1 / -1;
-  }
-
-  h2 {
-    @include section-title;
-    transform: none;
-    -webkit-text-stroke: 0;
-    text-align: left;
-    margin: 0;
-  }
-
-  p {
-    font-size: 0.95rem;
-    opacity: 0.7;
-    margin: 0;
-  }
-}
-
-.leaderboard-list {
-  grid-column: 11 / 23;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 1rem;
-
-  @media screen and (max-aspect-ratio: 12 / 8) {
-    grid-column: 2 / 12;
-  }
-
-  @media screen and (orientation: portrait) {
-    grid-column: 1 / -1;
-  }
-
-  li {
-    display: grid;
-    grid-template-columns: 3rem 1fr auto;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.5rem 1.75rem;
-    border-radius: 1.25rem;
-    border: 1px solid color-mix(in srgb, var(--foreground-color) 12%, transparent);
-    background: color-mix(in srgb, var(--background-color) 96%, transparent);
-  }
-}
-
-.leaderboard-rank {
-  font-family: var(--display-font);
-  font-size: 1.4rem;
-}
-
-.leaderboard-name {
-  font-family: var(--display-font);
-  font-size: 1.1rem;
-  display: block;
-}
-
-.leaderboard-streak {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.6;
-}
-
-.leaderboard-xp {
-  font-family: var(--display-font);
-  text-transform: uppercase;
-  font-size: 0.95rem;
-}
 </style>
