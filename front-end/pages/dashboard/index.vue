@@ -75,11 +75,11 @@ const courses = reactive<Course[]>([
     difficulty: "beginner",
     category: "Programming",
     tags: ["Syntax", "Data Structures", "Automation"],
-    progress: 40,
-    completedModules: 4,
-    totalModules: 10,
-    nextTopic: "Iteration Patterns",
-    eta: "18 min",
+    progress: 72,
+    completedModules: 18,
+    totalModules: 25,
+    nextTopic: "Working with Async IO",
+    eta: "10 min",
     topics: [
       {
         id: "python-data-classes",
@@ -184,11 +184,11 @@ def export(records: Iterable[dict], format_record: Formatter) -> list[str]:
     difficulty: "intermediate",
     category: "ML Ops",
     tags: ["Pipelines", "Evaluation", "Feature Stores"],
-    progress: 58,
-    completedModules: 15,
-    totalModules: 26,
-    nextTopic: "Model Explainability Playbook",
-    eta: "18 min",
+    progress: 20,
+    completedModules: 2,
+    totalModules: 10,
+    nextTopic: "Feature Engineering for Production",
+    eta: "20 min",
     topics: [
       {
         id: "ml-feature-store",
@@ -298,62 +298,53 @@ train:
     category: "Neural Networks",
     tags: ["PyTorch", "Vision", "Optimization"],
     progress: 44,
-    completedModules: 11,
-    totalModules: 25,
-    nextTopic: "Diffusion Models Primer",
-    eta: "22 min",
+    completedModules: 4,
+    totalModules: 10,
+    nextTopic: "Scaled Dot-Product Attention",
+    eta: "23 min",
     topics: [
       {
-        id: "dl-lightning",
-        title: "Training Loops with Lightning",
+        id: "dl-tensor-shapes",
+        title: "Tensor Shape Diagnostics",
         description:
-          "Standardize experiments using PyTorch Lightning modules and callbacks.",
+          "Infer tensor dimensions from nested Python lists and raise precise ragged errors.",
         status: "completed",
         language: "Python",
-        code: `class Classifier(pl.LightningModule):
-    def __init__(self, model, lr: float = 3e-4):
-        super().__init__()
-        self.model = model
-        self.lr = lr
-
-    def training_step(self, batch, _):
-        x, y = batch
-        logits = self.model(x)
-        loss = F.cross_entropy(logits, y)
-        self.log("train_loss", loss)
-        return loss`,
+        code: `def infer_shape(tensor):
+    if not isinstance(tensor, list):
+        return ()
+    length = len(tensor)
+    inner = infer_shape(tensor[0])
+    for row in tensor:
+        if infer_shape(row) != inner:
+            raise ValueError("ragged tensor detected")
+    return (length, *inner)`,
       },
       {
-        id: "dl-mixed-precision",
-        title: "Mixed Precision Mastery",
+        id: "dl-attention",
+        title: "Attention Mechanics",
         description:
-          "Accelerate training with gradient scaling and monitor stability using AMP.",
+          "Implement scaled dot-product attention complete with masking for causal decoders.",
         status: "in-progress",
         language: "Python",
-        code: `scaler = torch.cuda.amp.GradScaler()
-
-for inputs, labels in dataloader:
-    optimizer.zero_grad()
-    with torch.cuda.amp.autocast():
-        outputs = model(inputs)
-        loss = criterion(outputs, labels)
-    scaler.scale(loss).backward()
-    scaler.step(optimizer)
-    scaler.update()`,
+        code: `weights, context = scaled_dot_attention(
+    query=[1.0, 0.0],
+    keys=[[1.0, 0.0], [0.0, 1.0]],
+    values=[[1.0, 1.0], [0.0, 2.0]],
+)`,
       },
       {
-        id: "dl-checkpoints",
-        title: "Checkpointing & Tracking",
+        id: "dl-diffusion",
+        title: "Diffusion Sampling Fundamentals",
         description:
-          "Streamline runs with weight decay schedules and reproducibility envelopes.",
+          "Step through reverse diffusion updates with stable denoising math.",
         status: "locked",
         language: "Python",
-        code: `from torch.utils.data import random_split
+        code: `from math import sqrt
 
-def split_dataset(dataset, seed: int = 42):
-    torch.manual_seed(seed)
-    train_len = int(len(dataset) * 0.8)
-    return random_split(dataset, [train_len, len(dataset) - train_len])`,
+def denoise_step(x_t, beta, noise):
+    scale = sqrt(1 - beta)
+    return [(x - beta * n) / scale for x, n in zip(x_t, noise)]`,
       },
     ],
     projects: [
@@ -405,65 +396,50 @@ def split_dataset(dataset, seed: int = 42):
     category: "Generative AI",
     tags: ["Prompting", "Guardrails", "Tooling"],
     progress: 62,
-    completedModules: 16,
-    totalModules: 26,
-    nextTopic: "Guardrail Policies",
+    completedModules: 6,
+    totalModules: 10,
+    nextTopic: "Guardrail Policies & Moderation",
     eta: "14 min",
     topics: [
       {
-        id: "llm-evals",
-        title: "Building LLM Evaluation Suites",
+        id: "llm-prompt-playbooks",
+        title: "Prompt Playbooks & Pattern Libraries",
         description:
-          "Construct custom rubric-based evaluators, synthetic test cases, and regression dashboards.",
+          "Build structured prompts that stitch system tone, constraints, and conversation history together.",
         status: "completed",
-        language: "TypeScript",
-        code: `import { evaluate } from "@openai/evals"
-
-export const rubric = {
-  name: "zapminds-critique",
-  prompt: "Score the response 1-5 on accuracy and actionability.",
-};
-
-const result = await evaluate({
-  model: "gpt-4o-mini",
-  data: "./datasets/support.jsonl",
-  rubric
-});`,
+        language: "Python",
+        code: `prompt = build_prompt(
+    [{"role": "system", "content": "You are a coach."},
+     {"role": "user", "content": "Draft onboarding email."}],
+    {"tone": "positive", "constraints": ["Use bullet list."]}
+)`,
       },
       {
-        id: "llm-tools",
-        title: "Structured Tool Invocation",
+        id: "llm-tool-routing",
+        title: "Tool Router Strategies",
         description:
-          "Build agent runtimes that enforce JSON schema outputs, retries, and circuit breakers.",
+          "Map user intents to the exact tool roster with transparent reasoning a reviewer can audit.",
         status: "in-progress",
-        language: "TypeScript",
-        code: `type WeatherTool = {
-  city: string;
-  unit: "celsius" | "fahrenheit";
-};
-
-const response = await openai.responses.create({
-  model: "gpt-4.1",
-  response_format: { type: "json_schema", json_schema: schema },
-  tools: [weatherTool],
-  tool_choice: "auto",
-});`,
+        language: "Python",
+        code: `selected = route_tools(
+    {"schedule", "handoff"},
+    [
+        {"id": "calendar", "tags": {"schedule"}, "priority": "required"},
+        {"id": "handoff", "tags": {"handoff", "ticket"}}
+    ],
+)`,
       },
       {
         id: "llm-memory",
-        title: "Conversation Memory Architecture",
+        title: "Conversation Memory Strategies",
         description:
-          "Persist hybrid memory graphs mixing vector similarity, key moments, and reflections.",
+          "Capture pinned commitments and rolling summaries for assistants that stay contextually sharp.",
         status: "locked",
-        language: "TypeScript",
-        code: `const memory = await ragStore.multiVector.upsert({
-  id: session.id,
-  embeddings: {
-    semantic: embed(response.message),
-    intent: embedIntent(response.intent)
-  },
-  metadata: response.metadata,
-});`,
+        language: "Python",
+        code: `memory = summarise_memory(
+    [{"role": "user", "content": "Demo Friday", "pinned": True},
+     {"role": "assistant", "content": "Drafting agenda now."}]
+)`,
       },
     ],
     projects: [
@@ -515,41 +491,32 @@ const response = await openai.responses.create({
     category: "Knowledge Systems",
     tags: ["Indexing", "Chunking", "Evaluation"],
     progress: 51,
-    completedModules: 13,
-    totalModules: 25,
-    nextTopic: "Adaptive Chunk Sizes",
-    eta: "16 min",
+    completedModules: 5,
+    totalModules: 10,
+    nextTopic: "Hybrid Ranking & Signals",
+    eta: "18 min",
     topics: [
       {
-        id: "rag-chunking",
-        title: "Adaptive Chunking Strategies",
+        id: "rag-ingestion-contracts",
+        title: "Ingestion Contracts & Source Registry",
         description:
-          "Compare semantic, structural, and hierarchical chunking with instrumentation.",
+          "Normalise source metadata so ingestion workers respect freshness and auth scopes.",
         status: "completed",
-        language: "TypeScript",
-        code: `import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-
-const splitter = new RecursiveCharacterTextSplitter({
-  chunkSize: 800,
-  chunkOverlap: 120,
-  separators: ["\n\n", "\n", ".", " "],
-});
-
-const docs = await splitter.createDocuments(rawDocs);`,
+        language: "Python",
+        code: `source = build_source({"id": "docs", "type": "notion", "refresh_minutes": 720})`,
       },
       {
-        id: "rag-hybrid-search",
-        title: "Hybrid Retrieval Engines",
+        id: "rag-chunking-strategy",
+        title: "Adaptive Chunk Sizes",
         description:
-          "Blend dense, sparse, and metadata filtering inside a routing orchestrator.",
+          "Slice documents into retrieval-ready windows with overlap for semantic continuity.",
         status: "in-progress",
-        language: "TypeScript",
-        code: `const search = await retriever.hybrid({
-  query,
-  dense: { k: 6 },
-  sparse: { k: 4 },
-  filters: { course: ["python", "ml"] },
-});`,
+        language: "Python",
+        code: `chunks = adaptive_chunks(
+    ["Intro", "Architecture details", "Evaluation checklist"],
+    max_tokens=400,
+    overlap_tokens=60,
+)`,
       },
       {
         id: "rag-evals",
@@ -615,53 +582,43 @@ const docs = await splitter.createDocuments(rawDocs);`,
     category: "AI Infrastructure",
     tags: ["Protocol Design", "Interoperability", "Toolchains"],
     progress: 47,
-    completedModules: 12,
-    totalModules: 24,
-    nextTopic: "Capability Negotiation",
-    eta: "19 min",
+    completedModules: 3,
+    totalModules: 10,
+    nextTopic: "Resource URI Scoping",
+    eta: "16 min",
     topics: [
       {
-        id: "mcp-providers",
-        title: "Designing MCP Providers",
+        id: "mcp-handshake",
+        title: "Handshake Frames & Metadata",
         description:
-          "Build providers that describe capabilities, auth models, and streaming semantics.",
+          "Assemble handshake payloads that advertise client identity and capability versions.",
         status: "completed",
-        language: "TypeScript",
-        code: `const provider: MCPProvider = {
-  name: "zapminds-code",
-  version: "0.1.0",
-  capabilities: ["fs/read", "fs/write", "search"],
-  auth: { type: "api_key" },
-};`,
+        language: "Python",
+        code: `handshake = build_handshake(
+    "zapminds-shell",
+    [{"name": "fs/read", "version": "1.0"}]
+)`,
       },
       {
-        id: "mcp-routing",
-        title: "Capability Routing Graphs",
+        id: "mcp-negotiation",
+        title: "Capability Negotiation",
         description:
-          "Compose providers together and route calls based on latency, policy, and data gravity.",
+          "Match requested capabilities with provider support and prioritize the best versions.",
         status: "in-progress",
-        language: "TypeScript",
-        code: `const router = new CapabilityRouter({
-  providers: [docsProvider, codeProvider],
-  strategy: "latency-first",
-  policies: [{ capability: "search", allow: ["docsProvider"] }],
-});`,
+        language: "Python",
+        code: `matches = negotiate_capabilities(
+    {"search": ["1.0", "1.1"], "fs/read": ["1.0"]},
+    [{"name": "search", "min_version": "1.1", "priority": 0}]
+)`,
       },
       {
-        id: "mcp-security",
-        title: "Security & Observability",
+        id: "mcp-telemetry",
+        title: "Telemetry Bundles",
         description:
-          "Implement capability-level access control, request tracing, and audit trails.",
+          "Batch protocol telemetry under byte budgets before shipping to observability stacks.",
         status: "locked",
-        language: "TypeScript",
-        code: `router.on("request", (event) => {
-  audit.log({
-    capability: event.capability,
-    actor: event.actor,
-    durationMs: event.duration,
-    payloadHash: sha256(event.payload),
-  });
-});`,
+        language: "Python",
+        code: `bundles = list(bundle_events(log_events, max_bytes=1024))`,
       },
     ],
     projects: [
@@ -713,48 +670,45 @@ const docs = await splitter.createDocuments(rawDocs);`,
     category: "Autonomous Agents",
     tags: ["Planning", "Multi-agent", "Monitoring"],
     progress: 39,
-    completedModules: 9,
-    totalModules: 23,
+    completedModules: 3,
+    totalModules: 10,
     nextTopic: "Adaptive Goal Re-planning",
     eta: "21 min",
     topics: [
       {
-        id: "agent-planners",
-        title: "Task Decomposition & Planning",
+        id: "agent-goal-profiles",
+        title: "Goal Profiles & Constraints",
         description:
-          "Compare tree-of-thought, reflexion, and hierarchical planning architectures.",
+          "Normalise objectives with priorities and constraints so planners know what to protect.",
         status: "completed",
-        language: "TypeScript",
-        code: `const plan = await planner.generate({
-  goal: "Ship onboarding flow",
-  prompts: templates.taskDecomposition,
-  toolkit: ["jira", "github", "figma"],
-});`,
+        language: "Python",
+        code: `goal = build_goal_profile({
+    "name": "Launch onboarding",
+    "priority": 2,
+    "success_metrics": ["activation-rate", "nps"],
+    "constraints": ["security-review"],
+})`,
       },
       {
-        id: "agent-swarms",
-        title: "Multi-agent Collaboration",
+        id: "agent-scheduling",
+        title: "Event Loop & Throttling",
         description:
-          "Coordinate specialist agents with blackboard patterns, arbitration, and credit assignment.",
+          "Prototype a round-robin scheduler that prevents starvation while respecting concurrency caps.",
         status: "in-progress",
-        language: "TypeScript",
-        code: `const swarm = new AgentSwarm({ agents: [designer, engineer, analyst] });
-swarm.subscribe("progress", (event) => {
-  timeline.push(event);
-});`,
+        language: "Python",
+        code: `order = schedule({1: ["plan"], 2: ["review"]}, concurrency=1)`,
       },
       {
-        id: "agent-guardrails",
-        title: "Runtime Safety & Monitoring",
+        id: "agent-risk",
+        title: "Proactive Risk Monitoring",
         description:
-          "Instrument agents with guardrails, kill-switches, and realtime drift detection.",
+          "Audit proposed actions for policy violations before the agent executes them.",
         status: "locked",
-        language: "TypeScript",
-        code: `monitor.on("action", (action) => {
-  if (!policy.isAllowed(action)) {
-    action.cancel("Policy violation");
-  }
-});`,
+        language: "Python",
+        code: `report = risk_report(
+    [{"name": "delete_db", "risk_scores": {"safety": 0.9}, "prohibited": True}],
+    {"safety": 1.0}
+)`,
       },
     ],
     projects: [
@@ -973,32 +927,58 @@ const onLogout = async () => {
               course.id === selectedCourseId && $style['course-card--is-active'],
             ]"
           >
-            <button type="button" @click="onSelectCourse(course.id)">
-              <div :class="$style['course-card__meta']">
-                <span :class="$style['course-card__category']">
-                  {{ course.category }}
-                </span>
-                <span :class="$style['course-card__difficulty']">
-                  {{ UIElements.dashboard.difficultyLabels[course.difficulty] }}
-                </span>
+            <button
+              type="button"
+              :class="$style['course-card__link']"
+              @click="onSelectCourse(course.id)"
+            >
+              <div :class="$style['course-card__top']">
+                <div :class="$style['course-card__labels']">
+                  <span>{{ course.category }}</span>
+                  <span>{{ UIElements.dashboard.difficultyLabels[course.difficulty] }}</span>
+                </div>
+                <h3 :class="$style['course-card__title']">
+                  {{ course.title }}
+                </h3>
               </div>
-              <h3 :class="$style['course-card__title']">{{ course.title }}</h3>
-              <p :class="$style['course-card__subtitle']">
-                {{ UIElements.dashboard.courseProgressLabel(course.completedModules, course.totalModules) }}
-              </p>
+
               <div :class="$style['course-card__progress']">
-                <span :style="{ '--progress': course.progress / 100 }"></span>
+                <div :class="$style['course-card__progress-stats']">
+                  <strong>
+                    {{ UIElements.dashboard.courseProgressLabel(course.completedModules, course.totalModules) }}
+                  </strong>
+                  <span>{{ UIElements.dashboard.xpLabel(course.progress * 10) }}</span>
+                </div>
+                <div :class="$style['course-card__progress-track']">
+                  <span :style="{ '--progress': course.progress / 100 }"></span>
+                </div>
               </div>
-              <div :class="$style['course-card__footer']">
-                <div>
+
+              <div :class="$style['course-card__next']">
+                <div :class="$style['course-card__next-copy']">
                   <span>{{ UIElements.dashboard.nextUpLabel }}</span>
                   <strong>{{ course.nextTopic }}</strong>
                 </div>
                 <span :class="$style['course-card__eta']">{{ course.eta }}</span>
               </div>
-              <ul :class="$style['course-card__tags']">
-                <li v-for="tag in course.tags" :key="tag">{{ tag }}</li>
-              </ul>
+
+              <div :class="$style['course-card__tags']">
+                <span v-for="tag in course.tags" :key="tag">{{ tag }}</span>
+              </div>
+
+              <div :class="$style['course-card__cta']">
+                <span>{{ UIElements.dashboard.courseAction }}</span>
+                <svg width="28" height="12" viewBox="0 0 28 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M20.5 1L26 6L20.5 11"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path d="M1 6H25.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+              </div>
             </button>
           </li>
         </ul>
@@ -1404,7 +1384,7 @@ const onLogout = async () => {
   grid-column: 3 / 23;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  gap: var(--gutter-size);
+  gap: calc(var(--gutter-size) * 2);
 
   @media screen and (max-aspect-ratio: 12 / 8) {
     grid-column: 2 / 12;
@@ -1416,66 +1396,100 @@ const onLogout = async () => {
 }
 
 .course-card {
-  height: 100%;
+  height: 90%;
 
-  button {
-    width: 100%;
-    height: 100%;
+  &__link {
+    min-height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-    padding: 1.75rem;
-    border-radius: 1.5rem;
+    gap: 1rem;
+    padding: 1.05rem 1.2rem;
+    border-radius: 1.6rem;
     border: 1px solid color-mix(in srgb, var(--foreground-color) 12%, transparent);
-    background: color-mix(in srgb, var(--background-color) 96%, transparent);
-    color: var(--foreground-color);
+    appearance: none;
+    width: 100%;
+    background: radial-gradient(
+        circle at 20% -10%,
+        color-mix(in srgb, var(--foreground-color) 18%, transparent) 0%,
+        transparent 60%
+      ),
+      color-mix(in srgb, var(--background-color) 96%, transparent);
+    color: inherit;
     cursor: pointer;
-    text-align: left;
-    transition: transform 0.35s ease(out-cubic),
-      border-color 0.35s ease(out-cubic),
-      box-shadow 0.35s ease(out-cubic);
+    text-decoration: none;
+    height: 100%;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    transition: transform 0.35s ease(out-cubic), border-color 0.35s ease(out-cubic),
+      box-shadow 0.35s ease(out-cubic), background 0.45s ease(out-cubic);
+
+    &:before {
+      content: "";
+      position: absolute;
+      inset: -40% -20% auto;
+      height: 80%;
+      background: radial-gradient(
+        circle,
+        color-mix(in srgb, var(--foreground-color) 18%, transparent) 0%,
+        transparent 60%
+      );
+      opacity: 0;
+      transition: opacity 0.45s ease(out-cubic);
+      z-index: -1;
+    }
 
     &:hover,
     &:focus-visible {
       transform: translate3d(0, -0.2rem, 0);
       border-color: var(--foreground-color);
-      box-shadow: 0 18px 45px color-mix(in srgb, var(--foreground-color) 20%, transparent);
+      box-shadow: 0 24px 55px color-mix(in srgb, var(--foreground-color) 24%, transparent);
+
+      &:before {
+        opacity: 0.6;
+      }
     }
   }
 
-  &--is-active button {
+  &--is-active &__link {
     border-color: var(--foreground-color);
-    box-shadow: 0 18px 45px color-mix(in srgb, var(--foreground-color) 25%, transparent);
-  }
-
-  &__meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--foreground-color);
-    opacity: 0.75;
+    box-shadow: 0 24px 55px color-mix(in srgb, var(--foreground-color) 28%, transparent);
   }
 
   &__title {
     font-family: var(--display-font);
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     margin: 0;
-  }
-
-  &__subtitle {
-    margin: 0;
-    font-size: 0.9rem;
-    color: var(--foreground-color);
-    opacity: 0.7;
+    line-height: 1.05;
   }
 
   &__progress {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  &__progress-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    strong {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    span {
+      font-size: 0.75rem;
+      opacity: 0.6;
+      letter-spacing: 0.08em;
+    }
+  }
+
+  &__progress-track {
     width: 100%;
-    height: 0.4rem;
-    background: color-mix(in srgb, var(--foreground-color) 8%, transparent);
+    height: 0.35rem;
+    background: color-mix(in srgb, var(--foreground-color) 14%, transparent);
     border-radius: 999px;
     overflow: hidden;
 
@@ -1483,58 +1497,98 @@ const onLogout = async () => {
       display: block;
       height: 100%;
       width: calc(var(--progress) * 100%);
-      background: var(--foreground-color);
+      background: linear-gradient(
+        90deg,
+        var(--foreground-color) 0%,
+        color-mix(in srgb, var(--foreground-color) 50%, transparent) 100%
+      );
       transition: width 0.45s ease(out-cubic);
     }
   }
 
-  &__footer {
+  &__top {
+    display: grid;
+    gap: 1rem;
+  }
+
+  &__labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+
+    span {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      opacity: 0.65;
+    }
+  }
+
+  &__next {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
-    font-size: 0.85rem;
+    gap: 0.8rem;
+    border-radius: 0.9rem;
+    padding: 0.75rem 0.85rem;
+    background: color-mix(in srgb, var(--foreground-color) 10%, transparent);
+  }
+
+  &__next-copy {
+    display: grid;
+    gap: 0.2rem;
 
     span {
-      display: block;
-      color: var(--foreground-color);
-      opacity: 0.65;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.12em;
+      opacity: 0.7;
     }
 
     strong {
-      display: block;
-      margin-top: 0.15rem;
       font-size: 1rem;
-      color: var(--foreground-color);
-      opacity: 0.95;
+      letter-spacing: 0.05em;
     }
   }
 
   &__eta {
     font-size: 0.9rem;
     font-family: var(--display-font);
-    text-transform: uppercase;
+    letter-spacing: 0.12em;
   }
 
   &__tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.45rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+    gap: 0.35rem;
 
-    li {
-      padding: 0.4rem 0.8rem;
+    span {
+      padding: 0.35rem 0.7rem;
       border-radius: 999px;
-      background: color-mix(in srgb, var(--foreground-color) 10%, transparent);
+      background: color-mix(in srgb, var(--foreground-color) 8%, transparent);
       color: var(--foreground-color);
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      opacity: 0.8;
+      opacity: 0.75;
+    }
+  }
+
+  &__cta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: auto;
+    padding-top: 0.35rem;
+    font-family: var(--display-font);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    opacity: 0.85;
+
+    svg {
+      flex-shrink: 0;
     }
   }
 }
