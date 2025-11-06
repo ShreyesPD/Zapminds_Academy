@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { HomeQueryResult } from "~/types/sanity.types";
+import type { PortableTextBlock } from "@portabletext/types";
 import { useTimeoutFn } from "@vueuse/core";
 import { UIElements } from "~/assets/static-data/ui-elements";
 
@@ -68,6 +69,52 @@ const toggleInstance = (index = 0) => {
     openSourceScene.value.toggleInstance(index);
   }
 };
+
+// ZapMinds open source description content formatted as PortableText blocks
+const zapMindsOpenSource: PortableTextBlock[] = [
+  {
+    _type: "block",
+    _key: "zapminds-opensource-1",
+    style: "normal",
+    children: [
+      {
+        _type: "span",
+        _key: "zapminds-opensource-1-1",
+        text: "ZapMinds actively contributes to the open-source community and explores cutting-edge technologies to drive innovation. Through our research and development initiatives, we build and share tools, frameworks, and solutions that advance the field of AI, automation, and next-generation platforms.",
+        marks: [],
+      },
+    ],
+  },
+  {
+    _type: "block",
+    _key: "zapminds-opensource-2",
+    style: "normal",
+    children: [
+      {
+        _type: "span",
+        _key: "zapminds-opensource-2-1",
+        text: "We believe in the power of open collaboration and knowledge sharing. Our commitment to innovation extends beyond client projects—we're continuously exploring new technologies, contributing to open-source projects, and building frameworks that benefit the broader developer and AI community.",
+        marks: [],
+      },
+    ],
+  },
+  {
+    _type: "block",
+    _key: "zapminds-opensource-3",
+    style: "normal",
+    children: [
+      {
+        _type: "span",
+        _key: "zapminds-opensource-3-1",
+        text: "To learn more about our work, innovations, and contributions, visit our website and explore how ZapMinds is shaping the future of technology.",
+        marks: [],
+      },
+    ],
+  },
+];
+
+// Use ZapMinds open source description instead of CMS content
+const displayDescription = computed(() => zapMindsOpenSource);
 </script>
 
 <template>
@@ -82,9 +129,9 @@ const toggleInstance = (index = 0) => {
         :class="$style['section-counter']"
         :reversed="true"
       />
-      <div :class="$style.description" v-if="description">
+      <div :class="$style.description" v-if="displayDescription">
         <!-- @vue-ignore -->
-        <VSanityBlock :content="description" />
+        <VSanityBlock :content="displayDescription" />
       </div>
     </div>
 

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { HomeQueryResult } from "~/types/sanity.types";
+import type { PortableTextBlock } from "@portabletext/types";
 
 const props = defineProps<{
   title?: NonNullable<HomeQueryResult>["footerTitle"];
@@ -7,9 +8,6 @@ const props = defineProps<{
   description?: NonNullable<HomeQueryResult>["footerDescription"];
   socials?: NonNullable<HomeQueryResult>["socials"];
 }>();
-
-const socialsList = useTemplateRef("socials");
-const { isVisible: isSocialsVisible } = useIsVisible(socialsList);
 
 const credits = useTemplateRef("credits");
 const { isVisible: isCreditsVisible } = useIsVisible(credits);
@@ -34,6 +32,74 @@ const toggleGridHelper = () => {
 
   hasGridBeenVisible = true;
 };
+
+// ZapMinds footer description content formatted as PortableText blocks
+const zapMindsFooter: PortableTextBlock[] = [
+  {
+    _type: "block",
+    _key: "zapminds-footer-1",
+    style: "normal",
+    children: [
+      {
+        _type: "span",
+        _key: "zapminds-footer-1-1",
+        text: "Thank you for exploring ZapMinds Academy! We're excited to share our journey of innovation and continuous learning with you.",
+        marks: [],
+      },
+    ],
+  },
+  {
+    _type: "block",
+    _key: "zapminds-footer-2",
+    style: "normal",
+    children: [
+      {
+        _type: "span",
+        _key: "zapminds-footer-2-1",
+        text: "Interested in learning more about ZapMinds' innovative solutions? Want to explore our training programs? Ready to collaborate on your next breakthrough project?",
+        marks: [],
+      },
+    ],
+  },
+  {
+    _type: "block",
+    _key: "zapminds-footer-3",
+    style: "normal",
+    markDefs: [
+      {
+        _type: "link",
+        _key: "link-1",
+        href: "https://zapcom.ai/",
+      },
+    ],
+    children: [
+      {
+        _type: "span",
+        _key: "zapminds-footer-3-1",
+        text: "Visit ",
+        marks: [],
+      },
+      {
+        _type: "span",
+        _key: "zapminds-footer-3-2",
+        text: "zapcom.ai",
+        marks: ["link-1"],
+      },
+      {
+        _type: "span",
+        _key: "zapminds-footer-3-3",
+        text: " to discover how ZapMinds can help transform your ideas into reality and join us in building the future of technology.",
+        marks: [],
+      },
+    ],
+  },
+];
+
+// Use ZapMinds footer description instead of CMS content
+const displayDescription = computed(() => zapMindsFooter);
+
+// Override site title to show Zapminds
+const displaySiteTitle = computed(() => "Zapminds");
 </script>
 
 <template>
@@ -49,30 +115,10 @@ const toggleGridHelper = () => {
     </div>
 
     <div :class="$style.content" class="container grid">
-      <div :class="$style.description" v-if="description">
+      <div :class="$style.description" v-if="displayDescription">
         <!-- @vue-ignore -->
-        <VSanityBlock :content="description" />
+        <VSanityBlock :content="displayDescription" />
       </div>
-
-      <ul
-        :class="[
-          $style.socials,
-          isSocialsVisible && $style['socials--is-visible'],
-        ]"
-        v-if="socials"
-        ref="socials"
-      >
-        <li v-for="(social, i) in socials" :key="i">
-          <a
-            v-if="social.url"
-            :href="social.url"
-            target="_blank"
-            rel="noopener"
-          >
-            {{ social.title }}
-          </a>
-        </li>
-      </ul>
 
       <div
         :class="[
@@ -82,7 +128,7 @@ const toggleGridHelper = () => {
         ref="credits"
         @click="toggleGridHelper"
       >
-        {{ new Date().getFullYear() }} - {{ siteTitle }}
+        {{ new Date().getFullYear() }} - {{ displaySiteTitle }}
       </div>
     </div>
 

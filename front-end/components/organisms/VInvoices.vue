@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { HomeQueryResult } from "~/types/sanity.types";
+import type { PortableTextBlock } from "@portabletext/types";
 import { useTimeoutFn } from "@vueuse/core";
 import { UIElements } from "~/assets/static-data/ui-elements";
 
@@ -37,20 +38,76 @@ const invoices: ComputedRef<string[]> = computed(() => {
   return data.value?.flat() || [];
 });
 
-// TODO that's a bit dirty
-const parsedDescription = computed(() => {
-  return props.description?.map((block) => {
-    block.children = block.children?.map((c) => {
-      c.text = c.text?.replace(
-        "#{nbInvoices}",
-        invoices.value.length.toString()
-      );
-      return c;
-    });
-
-    return block;
-  });
+// ZapMinds invoices description content formatted as PortableText blocks
+const zapMindsInvoicesDescription = computed(() => {
+  const invoiceCount = invoices.value.length;
+  return [
+    {
+      _type: "block",
+      _key: "zapminds-invoices-desc-1",
+      style: "normal",
+      children: [
+        {
+          _type: "span",
+          _key: "zapminds-invoices-desc-1-1",
+          text: "INNOVATE!",
+          marks: ["strong"],
+        },
+      ],
+      markDefs: [],
+    },
+    {
+      _type: "block",
+      _key: "zapminds-invoices-desc-2",
+      style: "normal",
+      children: [
+        {
+          _type: "span",
+          _key: "zapminds-invoices-desc-2-1",
+          text: `Each sphere represents one of the ${invoiceCount} innovative ideas and concepts that ZapMinds has explored and developed, scaled based on their potential impact and transformative value.`,
+          marks: [],
+        },
+      ],
+      markDefs: [],
+    },
+  ] as PortableTextBlock[];
 });
+
+// Use ZapMinds invoices description instead of CMS content
+const displayInvoicesDescription = zapMindsInvoicesDescription;
+
+// ZapMinds process description content formatted as PortableText blocks
+const zapMindsProcess: PortableTextBlock[] = [
+  {
+    _type: "block",
+    _key: "zapminds-process-1",
+    style: "normal",
+    children: [
+      {
+        _type: "span",
+        _key: "zapminds-process-1-1",
+        text: "ZapMinds collaborates with enterprises, startups, government agencies, and strategic partners to transform innovative ideas into scalable solutions. We work with clients across industries including hospitality, tourism, retail, and technology, helping them navigate the complexities of emerging technologies and digital transformation.",
+        marks: [],
+      },
+    ],
+  },
+  {
+    _type: "block",
+    _key: "zapminds-process-2",
+    style: "normal",
+    children: [
+      {
+        _type: "span",
+        _key: "zapminds-process-2-1",
+        text: "With expertise spanning GenAI, Agentic AI, and next-generation data platforms, ZapMinds has delivered innovative solutions through structured Proofs of Concept, Minimum Viable Products, and enterprise-grade frameworks. Each project contributes to our collective knowledge, continuously refining our approach to innovation and ensuring we stay at the forefront of technological advancement.",
+        marks: [],
+      },
+    ],
+  },
+];
+
+// Use ZapMinds process description instead of CMS content
+const displayProcess = computed(() => zapMindsProcess);
 </script>
 
 <template>
@@ -59,11 +116,11 @@ const parsedDescription = computed(() => {
       <VCanvasSeparator :invert-colors="true" />
     </div>
 
-    <div :class="$style.intro" class="container grid" v-if="process">
+    <div :class="$style.intro" class="container grid" v-if="displayProcess">
       <VSectionCounter :section="2" :class="$style['section-counter']" />
       <div :class="$style.process">
         <!-- @vue-ignore -->
-        <VSanityBlock :content="process" />
+        <VSanityBlock :content="displayProcess" />
       </div>
     </div>
 
@@ -97,10 +154,10 @@ const parsedDescription = computed(() => {
           </div>
         </Transition>
 
-        <VExpandableLegend :class="$style.legend" label="invoices scene">
-          <div :class="$style['legend-desc']" v-if="description">
+        <VExpandableLegend :class="$style.legend" label="ideas scene">
+          <div :class="$style['legend-desc']" v-if="displayInvoicesDescription">
             <!-- @vue-ignore -->
-            <SanityContent :blocks="parsedDescription" />
+            <SanityContent :blocks="displayInvoicesDescription" />
           </div>
         </VExpandableLegend>
 

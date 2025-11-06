@@ -1,4 +1,4 @@
 export const siteConfig = {
-  siteTitle: 'Martin Laxenaire',
+  siteTitle: 'Zapcom.ai',
   projectId: 'ubnf9pq5',
 }

@@ -27,6 +27,8 @@ watch(colors, () => {
     <slot />
   </main>
 
+  <ToastContainer />
+
   <div id="debug" :class="$style.debug" />
 </template>
 

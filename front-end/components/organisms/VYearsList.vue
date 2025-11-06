@@ -6,7 +6,7 @@ import { ScrollTrigger } from "gsap/all";
 import { yearsVideos } from "~/assets/static-data/years-videos";
 import { UIElements } from "~/assets/static-data/ui-elements";
 
-defineProps<{
+const props = defineProps<{
   title?: NonNullable<HomeQueryResult>["yearsTitle"];
 }>();
 
@@ -18,6 +18,9 @@ export type YearsList = Array<{
 }>;
 
 const years = ref(yearsVideos);
+
+// Override title to change "me" to "us"
+const displayTitle = computed(() => "Things that kept us busy these past years");
 
 const yearsWrapper = useTemplateRef("years-wrapper");
 const yearsContainer = useTemplateRef("years-container");
@@ -200,7 +203,7 @@ onBeforeUnmount(() => {
     <div :class="$style.top">
       <div class="container grid">
         <h3 :class="$style.title">
-          <VAnimatedTextByLetters :label="title || ''" :align="'center'" />
+          <VAnimatedTextByLetters :label="displayTitle" :align="'center'" />
         </h3>
       </div>
 

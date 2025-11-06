@@ -1,0 +1,1373 @@
+================================================================================
+DEVELOPMENT DOCUMENTATION
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 08:24:39 IST
+================================================================================
+
+CHANGE LOG - Website Content Update
+================================================================================
+
+TASK: Update Introduction Text with ZapMinds and ZapMinds Academy Content
+
+DESCRIPTION:
+Updated the main introduction section of the website to replace the previous
+content with new ZapMinds branding and messaging, including information about
+ZapMinds Academy.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/atoms/VIntro.vue
+
+CHANGES MADE:
+-------------
+1. Added new ZapMinds introductory content formatted as PortableText blocks:
+   - Main ZapMinds description explaining its role as ZapCom's innovation catalyst
+   - Information about Innovation-as-a-Service (InaaS) and Results-as-a-Service (RaaS)
+   - Tagline: "We don't just explore the future - we build it."
+   - Details about PoCs, MVPs, and scalable solution frameworks
+
+2. Added ZapMinds Academy content:
+   - Explanation of ZapMinds Academy as an initiative for continuous learning
+   - Mission statement about upskilling professionals
+   - Information about training programs, workshops, and curriculum
+   - Emphasis on continuous learning and professional growth
+
+3. Technical Implementation:
+   - Imported PortableTextBlock type from @portabletext/types
+   - Created zapMindsIntro constant with properly structured PortableText blocks
+   - Created computed property displayIntro to use the new content
+   - Component now displays ZapMinds content instead of CMS content
+
+CONTENT STRUCTURE:
+------------------
+The new content is organized into 5 paragraphs:
+1. ZapMinds introduction and core services
+2. Tagline about building the future
+3. ZapMinds capabilities and deliverables
+4. ZapMinds Academy introduction and purpose
+5. ZapMinds Academy mission and offerings
+
+TECHNICAL NOTES:
+----------------
+- Content is formatted as PortableText blocks compatible with VSanityBlock component
+- Each block has unique _key identifiers for proper rendering
+- Content maintains the same visual structure and styling as before
+- The component still supports the skip game functionality below the intro
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- TypeScript types properly imported and used
+- Content formatted correctly for PortableText rendering
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 08:26:22 IST
+================================================================================
+
+CHANGE LOG - Content Condensation and Refinement
+================================================================================
+
+TASK: Summarize and Reduce ZapMinds Content to 2 Paragraphs + Add Academy Paragraph
+
+DESCRIPTION:
+Condensed the ZapMinds introduction content from 5 paragraphs down to 2 concise
+paragraphs, while maintaining all key information. Added the complete ZapMinds
+Academy paragraph as requested.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/atoms/VIntro.vue
+
+CHANGES MADE:
+-------------
+1. Condensed ZapMinds content into 2 paragraphs:
+   - Paragraph 1: Combined ZapMinds introduction, InaaS/RaaS services, technologies
+     (GenAI, Agentic AI, next-gen platforms), and tagline "We don't just explore
+     the future - we build it."
+   - Paragraph 2: Combined ZapMinds capabilities focusing on identifying frontier
+     opportunities, transforming them into PoCs/MVPs/scalable frameworks, and
+     co-creating breakthrough ideas with clients
+
+2. Added ZapMinds Academy paragraph:
+   - Complete Academy description including mission, training programs, workshops,
+     curriculum, and upskilling mission
+   - Emphasizes continuous learning, professional growth, and community support
+
+CONTENT STRUCTURE (UPDATED):
+----------------------------
+The content is now organized into 3 concise paragraphs:
+1. ZapMinds overview: Catalyst role, InaaS/RaaS services, technologies, and tagline
+2. ZapMinds capabilities: Opportunity identification, PoCs/MVPs, co-creation with clients
+3. ZapMinds Academy: Complete description of the learning initiative, mission, and offerings
+
+TECHNICAL NOTES:
+----------------
+- Content reduced from 6 blocks to 3 blocks for better readability
+- All original information preserved in condensed format
+- Maintains PortableText block structure for proper rendering
+- No functionality changes - component behavior remains the same
+
+TESTING:
+--------
+- No linting errors detected
+- Content structure verified
+- All key messaging preserved in condensed format
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 08:30:12 IST
+================================================================================
+
+CHANGE LOG - Projects Section Description Update
+================================================================================
+
+TASK: Update Projects Description Text with Refined Content
+
+DESCRIPTION:
+Updated the projects section description to replace the previous content with
+new refined text focusing on creative projects and innovation as a key focus
+for customer experience.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/organisms/VProjectsList.vue
+
+CHANGES MADE:
+-------------
+1. Refined and updated projects description text:
+   - Paragraph 1: "Here's a small selection of some creative projects that
+     we've had the chance to work on."
+   - Paragraph 2: "Across all of them, innovation was a key focus, ensuring
+     customer experience as well."
+
+2. Technical Implementation:
+   - Imported PortableTextBlock type from @portabletext/types
+   - Created projectsDescription constant with properly structured PortableText blocks
+   - Created computed property displayDescription to use the new content
+   - Component now displays refined content instead of CMS content
+
+CONTENT REFINEMENTS:
+--------------------
+- Fixed grammar: "hers" → "Here's"
+- Fixed grammar: "we have got" → "we've had"
+- Fixed spelling: "expirience" → "experience"
+- Fixed spelling: "as welll" → "as well"
+- Added proper capitalization and punctuation
+- Improved sentence structure and flow
+
+TECHNICAL NOTES:
+----------------
+- Content is formatted as PortableText blocks compatible with VSanityBlock component
+- Each block has unique _key identifiers for proper rendering
+- Content maintains the same visual structure and styling as before
+- Component functionality (level points, visibility) remains unchanged
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- TypeScript types properly imported and used
+- Content formatted correctly for PortableText rendering
+
+================================================================================
+End of Entry
+================================================================================
+
+
+Date: Thursday, November 6, 2025
+Time: 08:42:19 IST
+================================================================================
+
+CHANGE LOG - Project Names Update in Projects Table
+================================================================================
+
+TASK: Update Project Names in Projects List to Match New ZapMinds Projects
+
+DESCRIPTION:
+Updated the project names displayed in the projects table/list to match the new
+ZapMinds project names from the provided table.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/organisms/VProjectsList.vue
+
+CHANGES MADE:
+-------------
+1. Added new project names array:
+   - Zack.AI
+   - AI Sentiment Analysis
+   - Traveler Experience Platform (B2G)
+   - ZapGenie
+   - AI Scrum Master
+   - Voyage.AI
+
+2. Technical Implementation:
+   - Created newProjectNames array with the 6 new project names
+   - Created displayProjects computed property that maps existing projects
+     from CMS to use the new titles
+   - Updated template to use displayProjects instead of props.projects
+   - Projects retain all other properties (stack, url, cover, etc.) from CMS,
+     only the title is overridden
+
+TECHNICAL NOTES:
+----------------
+- Projects are still fetched from Sanity CMS
+- Only the title property is overridden with new names
+- All other project properties (stack, url, date, cover image) remain unchanged
+- The mapping preserves the order of projects from CMS and applies new names
+  sequentially (first project gets first new name, etc.)
+- If there are more projects than new names, remaining projects keep their
+  original titles from CMS
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- Project mapping logic implemented correctly
+- All 6 new project names properly configured
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 08:45:35 IST
+================================================================================
+
+CHANGE LOG - Remove Recognition Paragraph from Projects Section
+================================================================================
+
+TASK: Remove Recognition/Awards Paragraph from Projects List
+
+DESCRIPTION:
+Removed the recognition paragraph section that displayed information about
+awards, platform recognition (Awwwards, FWA), and featured articles (Codrops,
+CSS Tricks, etc.) from the projects section.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/organisms/VProjectsList.vue
+
+CHANGES MADE:
+-------------
+1. Removed the recognition section div:
+   - Removed the entire recognition div that displayed CMS content about
+     professional recognition, awards, and featured articles
+   - The recognition section previously displayed text about:
+     - Work recognized by platforms like Awwwards and FWA
+     - Featured by websites like Codrops, Muzli, Site Inspire, etc.
+     - Articles, tutorials, and case studies for Okay Dev, CSS Tricks,
+       Communication Arts
+
+TECHNICAL NOTES:
+----------------
+- Recognition prop is still accepted by the component but no longer displayed
+- CSS styles for .recognition remain in the stylesheet but are unused
+- Component structure and functionality remain intact
+- Projects list and description sections remain unchanged
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- Recognition section successfully removed from display
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 08:48:46 IST
+================================================================================
+
+CHANGE LOG - Update Years Section Title
+================================================================================
+
+TASK: Change "me" to "us" in Years Section Title
+
+DESCRIPTION:
+Updated the years section title from "Things that kept me busy these past years"
+to "Things that kept us busy these past years" to reflect a team/collective
+perspective instead of individual.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/organisms/VYearsList.vue
+
+CHANGES MADE:
+-------------
+1. Updated title text:
+   - Changed from: "Things that kept me busy these past years"
+   - Changed to: "Things that kept us busy these past years"
+
+2. Technical Implementation:
+   - Changed defineProps to const props to allow access to props
+   - Created displayTitle computed property with the new title text
+   - Updated template to use displayTitle instead of props.title
+   - Title is now hardcoded to override CMS content
+
+TECHNICAL NOTES:
+----------------
+- Title is now overridden to use the new text regardless of CMS content
+- The component still accepts the title prop but doesn't use it
+- All other functionality remains unchanged
+- The animated text component will display the new title with proper styling
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- Title successfully updated to use "us" instead of "me"
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 08:51:17 IST
+================================================================================
+
+CHANGE LOG - Update Process Description to ZapMinds Content
+================================================================================
+
+TASK: Replace Process Description with ZapMinds-Focused Content
+
+DESCRIPTION:
+Updated the process description section (section 2) to replace the previous
+text about collaborating with agencies and building websites with new content
+about ZapMinds' collaborations, expertise, and project delivery.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/organisms/VInvoices.vue
+
+CHANGES MADE:
+-------------
+1. Replaced process description content with ZapMinds-focused text:
+   - Paragraph 1: Describes ZapMinds' collaborations with enterprises,
+     startups, government agencies, and strategic partners across industries
+     (hospitality, tourism, retail, technology)
+   - Paragraph 2: Highlights ZapMinds' expertise in GenAI, Agentic AI, and
+     next-gen data platforms, delivering solutions through PoCs, MVPs, and
+     enterprise frameworks
+
+2. Technical Implementation:
+   - Imported PortableTextBlock type from @portabletext/types
+   - Created zapMindsProcess constant with properly structured PortableText blocks
+   - Created computed property displayProcess to use the new content
+   - Component now displays ZapMinds content instead of CMS content
+
+CONTENT CHANGES:
+----------------
+- Removed: Previous text about collaborating with agencies, startups, brands,
+  and clients like Jam3, Rezo Zero, Chanel, etc.
+- Removed: Previous text about decade of experience building websites
+- Added: ZapMinds collaboration focus with enterprises, startups, government
+- Added: ZapMinds expertise in GenAI, Agentic AI, and digital transformation
+- Added: Focus on PoCs, MVPs, and enterprise-grade frameworks
+
+TECHNICAL NOTES:
+----------------
+- Content is formatted as PortableText blocks compatible with VSanityBlock component
+- Each block has unique _key identifiers for proper rendering
+- Process prop is still accepted but not used - component displays ZapMinds content
+- All other component functionality remains unchanged
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- TypeScript types properly imported and used
+- Content formatted correctly for PortableText rendering
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 08:52:50 IST
+================================================================================
+
+CHANGE LOG - Update All Project Links to Zapcom.ai
+================================================================================
+
+TASK: Point All Project Redirect Links to https://zapcom.ai/
+
+DESCRIPTION:
+Updated all project links in the projects list to redirect to https://zapcom.ai/
+instead of their original URLs. This ensures all project items in the table
+link to the Zapcom main website.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/organisms/VProjectsList.vue
+
+CHANGES MADE:
+-------------
+1. Updated displayProjects computed property:
+   - Added url: "https://zapcom.ai/" to all project objects
+   - All projects now redirect to the Zapcom website when clicked
+   - Projects affected: Zack.AI, AI Sentiment Analysis, Traveler Experience
+     Platform (B2G), ZapGenie, AI Scrum Master, Voyage.AI
+
+2. Technical Implementation:
+   - Modified the mapping function to include url property override
+   - All projects now have a consistent redirect URL regardless of original
+     CMS data
+   - Projects still retain all other properties (title, stack, cover, date)
+
+TECHNICAL NOTES:
+----------------
+- URL override is applied to all projects in the displayProjects array
+- Original project URLs from CMS are ignored and replaced with zapcom.ai
+- Link behavior (opens in new tab, feature points tracking) remains unchanged
+- The VProjectThumb component automatically creates anchor tags when url exists
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- All project links now point to https://zapcom.ai/
+- Link functionality preserved (target="_blank", onClickOnce tracking)
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 08:55:13 IST
+================================================================================
+
+CHANGE LOG - Update Open Source Description to ZapMinds Content
+================================================================================
+
+TASK: Replace Open Source Description with ZapMinds-Focused Content
+
+DESCRIPTION:
+Updated the open source description section to replace the previous text about
+curtains.js, gpu-curtains, and GitHub contributions with new content about
+ZapMinds' open-source contributions and innovation efforts.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/organisms/VOpenSource.vue
+
+CHANGES MADE:
+-------------
+1. Replaced open source description content with ZapMinds-focused text:
+   - Paragraph 1: Describes ZapMinds' active contributions to open-source
+     community and exploration of cutting-edge technologies, building tools,
+     frameworks, and solutions for AI, automation, and next-gen platforms
+   - Paragraph 2: Emphasizes ZapMinds' belief in open collaboration and
+     knowledge sharing, commitment to innovation beyond client projects
+   - Paragraph 3: Invites readers to learn more about ZapMinds' work and
+     innovations on their website
+
+2. Technical Implementation:
+   - Imported PortableTextBlock type from @portabletext/types
+   - Created zapMindsOpenSource constant with properly structured PortableText blocks
+   - Created computed property displayDescription to use the new content
+   - Component now displays ZapMinds content instead of CMS content
+
+CONTENT CHANGES:
+----------------
+- Removed: Previous text about creating and maintaining open-source projects
+  like curtains.js and gpu-curtains
+- Removed: Previous text about publishing portfolio source code and GitHub profile
+- Added: ZapMinds' contributions to open-source community
+- Added: Focus on AI, automation, and next-generation platforms
+- Added: Emphasis on open collaboration and knowledge sharing
+- Added: Call to action to visit ZapMinds website
+
+TECHNICAL NOTES:
+----------------
+- Content is formatted as PortableText blocks compatible with VSanityBlock component
+- Each block has unique _key identifiers for proper rendering
+- Description prop is still accepted but not used - component displays ZapMinds content
+- All other component functionality remains unchanged (GitHub contributions display, etc.)
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- TypeScript types properly imported and used
+- Content formatted correctly for PortableText rendering
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 09:01:06 IST
+================================================================================
+
+CHANGE LOG - Remove Footer Social Links and Update to ZapMinds Content
+================================================================================
+
+TASK: Remove Social Links and Update Footer Text to ZapMinds Content
+
+DESCRIPTION:
+Removed all social media redirect links from the footer section and replaced
+the footer description text with ZapMinds-focused content that includes a
+link to zapcom.ai.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/organisms/VFooter.vue
+
+CHANGES MADE:
+-------------
+1. Removed social links section:
+   - Removed the entire `<ul>` element displaying social media links
+   - Removed socialsList template ref and isSocialsVisible watcher
+   - Social links (GitHub, Bluesky, LinkedIn, OkayDev, CodePen) no longer displayed
+
+2. Replaced footer description with ZapMinds content:
+   - Paragraph 1: Thank you message for exploring ZapMinds Academy
+   - Paragraph 2: Questions about ZapMinds' solutions, training programs, and collaboration
+   - Paragraph 3: Call to action with link to zapcom.ai to discover ZapMinds' services
+
+3. Technical Implementation:
+   - Imported PortableTextBlock type from @portabletext/types
+   - Created zapMindsFooter constant with properly structured PortableText blocks
+   - Added link mark to "zapcom.ai" text that links to https://zapcom.ai/
+   - Created computed property displayDescription to use the new content
+   - Component now displays ZapMinds content instead of CMS content
+
+CONTENT CHANGES:
+----------------
+- Removed: Social media links section (GitHub, Bluesky, LinkedIn, OkayDev, CodePen)
+- Removed: Previous footer text about contacting the author
+- Added: ZapMinds Academy thank you message
+- Added: Questions about ZapMinds' solutions and training programs
+- Added: Call to action with link to zapcom.ai
+
+TECHNICAL NOTES:
+----------------
+- Content is formatted as PortableText blocks compatible with VSanityBlock component
+- Link mark properly structured with markDefs array and marks reference
+- Socials prop is still accepted but not displayed
+- Footer description prop is still accepted but not used
+- All other component functionality remains unchanged (credits, grid helper, etc.)
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- TypeScript types properly imported and used
+- Content formatted correctly for PortableText rendering
+- Link to zapcom.ai properly configured
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 09:03:09 IST
+================================================================================
+
+CHANGE LOG - Update Invoices Scene Description to ZapMinds Ideas Content
+================================================================================
+
+TASK: Change Invoices Scene Description Text to Focus on Ideas and ZapMinds
+
+DESCRIPTION:
+Updated the invoices scene legend description to replace the previous text about
+freelance invoices with new content about ZapMinds' innovative ideas and concepts.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/organisms/VInvoices.vue
+
+CHANGES MADE:
+-------------
+1. Updated legend label:
+   - Changed from: "invoices scene"
+   - Changed to: "ideas scene"
+
+2. Replaced invoices description content with ZapMinds ideas content:
+   - Title: "INNOVATE!" (formatted with strong mark for bold/uppercase styling)
+   - Description: "Each sphere represents one of the [count] innovative ideas and
+     concepts that ZapMinds has explored and developed, scaled based on their
+     potential impact and transformative value."
+
+3. Technical Implementation:
+   - Created zapMindsInvoicesDescription computed property that dynamically
+     includes the invoice count from the data
+   - Used strong mark on "INNOVATE!" text for proper styling
+   - Description dynamically updates based on number of invoices/ideas
+   - Updated VExpandableLegend to use new description and label
+
+CONTENT CHANGES:
+----------------
+- Removed: Previous text about "CONTRIBUTE!" and freelance invoices
+- Removed: Previous text about "126 invoices issued during my freelance career"
+- Added: "INNOVATE!" title with strong formatting
+- Added: Description about ZapMinds' innovative ideas and concepts
+- Added: Focus on potential impact and transformative value
+- Changed: Legend label from "invoices scene" to "ideas scene"
+
+TECHNICAL NOTES:
+----------------
+- Content is formatted as PortableText blocks compatible with SanityContent component
+- Invoice count is dynamically injected from invoices data
+- Strong mark used for title styling (uppercase, bold)
+- Description prop is still accepted but not used - component displays ZapMinds content
+- All other component functionality remains unchanged
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- TypeScript types properly imported and used
+- Content formatted correctly for PortableText rendering
+- Dynamic invoice count properly included in description
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 09:11:29 IST
+================================================================================
+
+CHANGE LOG - Update Source Code Link to Zapcom.ai
+================================================================================
+
+TASK: Change Source Code Link from GitHub Portfolio to Zapcom.ai
+
+DESCRIPTION:
+Updated the source code link in the header from the GitHub portfolio repository
+to point to the Zapcom website.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/atoms/VSourceCodeLink.vue
+
+CHANGES MADE:
+-------------
+1. Updated source code link:
+   - Changed from: "https://github.com/martinlaxenaire/portfolio-2025"
+   - Changed to: "https://zapcom.ai/"
+
+2. Technical Implementation:
+   - Updated href attribute in the anchor tag
+   - Link still opens in new tab (target="_blank")
+   - Maintains rel="noopener" for security
+   - All other functionality remains unchanged (click tracking, styling, etc.)
+
+TECHNICAL NOTES:
+----------------
+- Link is displayed as a styled button with "</>" symbol
+- Component still maintains feature points tracking on click
+- aria-label still uses UIElements.header.sourceCode for accessibility
+- Visual styling and behavior remain unchanged
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- Link successfully updated to zapcom.ai
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 09:12:36 IST
+================================================================================
+
+CHANGE LOG - Update Footer Credit to Zapminds
+================================================================================
+
+TASK: Change Footer Credit from "2025 - Martin Laxenaire" to "2025 - Zapminds"
+
+DESCRIPTION:
+Updated the footer credit text to display "Zapminds" instead of the CMS site title
+(Martin Laxenaire).
+
+FILES MODIFIED:
+----------------
+1. front-end/components/organisms/VFooter.vue
+
+CHANGES MADE:
+-------------
+1. Updated footer credit display:
+   - Changed from: "2025 - Martin Laxenaire" (or whatever siteTitle was from CMS)
+   - Changed to: "2025 - Zapminds"
+
+2. Technical Implementation:
+   - Created displaySiteTitle computed property that returns "Zapminds"
+   - Updated template to use displaySiteTitle instead of props.siteTitle
+   - Site title prop is still accepted but not used in footer credit display
+
+TECHNICAL NOTES:
+----------------
+- Footer credit dynamically shows current year + "Zapminds"
+- Site title prop is still accepted but overridden for display
+- All other footer functionality remains unchanged (grid helper toggle, etc.)
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- Footer credit successfully updated to show "Zapminds"
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 6, 2025
+Time: 09:15:29 IST
+================================================================================
+
+CHANGE LOG - Update Browser Tab Title to ZapMinds Academy
+================================================================================
+
+TASK: Change Browser Tab Title from "Martin Laxenaire | Creative" to "ZapMinds Academy"
+
+DESCRIPTION:
+Updated the browser tab title (page title) to display "ZapMinds Academy" instead
+of the CMS-based title that was showing "Martin Laxenaire | Creative".
+
+FILES MODIFIED:
+----------------
+1. front-end/pages/index.vue
+
+CHANGES MADE:
+-------------
+1. Updated page title:
+   - Changed from: `${data.value?.title} | ${data.value?.seoTitle}` (from CMS)
+   - Changed to: "ZapMinds Academy"
+
+2. Technical Implementation:
+   - Created pageTitle constant set to "ZapMinds Academy"
+   - Updated useSeoMeta to use the new pageTitle instead of CMS data
+   - Removed server-side only condition to ensure title works on both server and client
+   - Updated title, ogTitle, and twitterTitle to use the new pageTitle
+
+TECHNICAL NOTES:
+----------------
+- Page title now displays "ZapMinds Academy" in browser tab
+- SEO meta tags (ogTitle, twitterTitle) also updated to "ZapMinds Academy"
+- Title is set on both server and client side for proper rendering
+- CMS data is still fetched but title is overridden
+- All other SEO meta tags remain unchanged (description, images, etc.)
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- Browser tab title successfully updated to "ZapMinds Academy"
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 06, 2025
+Time: 13:35:10 IST
+================================================================================
+
+CHANGE LOG - Add Sign Up and Sign In Buttons to Header
+================================================================================
+
+TASK: Add Sign Up and Sign In buttons next to the ZAPCOM.AI site title in the header
+
+DESCRIPTION:
+Added two authentication buttons (Sign In and Sign Up) to the header navigation,
+positioned next to the site title link. The buttons are styled as subtle ghost
+buttons matching the existing design system with proper hover states and
+responsive behavior.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/organisms/VHeader.vue
+
+CHANGES MADE:
+-------------
+1. Added authentication buttons to navigation:
+   - Created authButtons container div within the nav element
+   - Added "Sign In" button with ghost button styling
+   - Added "Sign Up" button with primary button styling (filled)
+   - Positioned buttons next to VHeaderSiteTitleLink component
+
+2. Updated navigation styling:
+   - Added flexbox display to .nav class for proper alignment
+   - Added gap: 1rem for spacing between title and buttons
+   - Ensured buttons inherit header visibility animations
+
+3. Created button styles:
+   - .authButtons: Container with flex layout and gap spacing
+   - .authButton: Base button style with:
+     * Transparent background with border
+     * Uppercase text matching site typography
+     * Smooth transitions for hover states
+     * Inverted colors on hover (background/foreground swap)
+     * Responsive padding and font size for mobile
+   - .authButton--primary: Primary variant with:
+     * Filled background (foreground color)
+     * Inverted text color (background color)
+     * Reverse hover effect (becomes transparent)
+
+TECHNICAL NOTES:
+----------------
+- Buttons use CSS custom properties (--foreground-color, --background-color) for theming
+- Buttons respect prefers-reduced-motion for accessibility
+- Pointer events are enabled (pointer-events: auto) to ensure buttons are clickable
+- Buttons inherit the header's visibility animation (slide down on scroll)
+- Responsive design: smaller padding and font size on screens < 480px
+- Buttons follow the existing design pattern seen in VSkipGame and VColorPaletteButton
+- Sign In button: ghost style (transparent with border)
+- Sign Up button: primary style (filled with inverted hover)
+
+TESTING:
+--------
+- No linting errors detected
+- Component structure maintained
+- Buttons properly positioned next to site title
+- Hover states work correctly
+- Responsive behavior verified
+- Buttons inherit header animations
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 06, 2025
+Time: 14:09:48 IST
+================================================================================
+
+CHANGE LOG - Add Navigation to Sign In and Sign Up Pages
+================================================================================
+
+TASK: Convert Sign In and Sign Up buttons to navigate to separate blank pages
+
+DESCRIPTION:
+Updated the Sign In and Sign Up buttons in the header to navigate to dedicated
+pages. Created two new blank pages (signin.vue and signup.vue) and converted
+the buttons from regular button elements to NuxtLink components for navigation.
+
+FILES MODIFIED:
+----------------
+1. front-end/components/organisms/VHeader.vue
+2. front-end/pages/signin.vue (NEW)
+3. front-end/pages/signup.vue (NEW)
+
+CHANGES MADE:
+-------------
+1. Updated header buttons:
+   - Changed Sign In button from <button> to <NuxtLink to="/signin">
+   - Changed Sign Up button from <button> to <NuxtLink to="/signup">
+   - Added text-decoration: none to .authButton style for proper link rendering
+
+2. Created Sign In page (signin.vue):
+   - Basic blank page structure with centered content
+   - Page title: "Sign In"
+   - Subtitle: "Sign in to your account"
+   - SEO meta tags configured
+   - Minimal styling matching site design system
+
+3. Created Sign Up page (signup.vue):
+   - Basic blank page structure with centered content
+   - Page title: "Sign Up"
+   - Subtitle: "Create a new account"
+   - SEO meta tags configured
+   - Minimal styling matching site design system
+
+TECHNICAL NOTES:
+----------------
+- Pages use Nuxt 3 file-based routing (signin.vue → /signin, signup.vue → /signup)
+- Both pages include proper SEO meta tags with page-specific titles
+- Pages use the same layout system (default.vue) as the rest of the site
+- Styling uses CSS custom properties for theming consistency
+- Pages are ready for future authentication form implementation
+- Button styles work correctly with NuxtLink (which renders as anchor tags)
+
+TESTING:
+--------
+- No linting errors detected
+- Navigation works correctly from header buttons
+- Pages render properly with header and layout
+- SEO meta tags are properly configured
+- Styling is consistent with site design
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 06, 2025
+Time: 14:12:54 IST
+================================================================================
+
+CHANGE LOG - Authentication Implementation Plan Created
+================================================================================
+
+TASK: Create comprehensive implementation plan for Supabase email/password authentication
+
+DESCRIPTION:
+Created a detailed implementation plan for adding email/password authentication using
+Supabase MCP server. The plan includes sign up and sign in functionality with
+designation field storage at Zapcom.
+
+FILES CREATED:
+--------------
+1. AUTH_IMPLEMENTATION_PLAN.md - Comprehensive implementation plan document
+
+PLAN OVERVIEW:
+--------------
+The plan is organized into 8 phases covering:
+
+1. Foundation Setup:
+   - Supabase client utility and composables
+   - Nuxt configuration updates
+   - Environment variable setup
+
+2. Database Changes:
+   - Add designation field to profiles table
+   - Migration script
+   - RLS policy verification
+
+3. UI Components:
+   - Sign Up form with email, password, confirm password, designation
+   - Sign In form with email and password
+   - Header component updates for auth state
+
+4. Server-Side Integration:
+   - Profile creation on sign up
+   - Database trigger or client-side hook
+   - Error handling
+
+5. Error Handling & Validation:
+   - User-friendly error messages
+   - Form validation (client-side)
+   - Input sanitization
+
+6. State Management:
+   - Session persistence
+   - Auth state listeners
+   - Reactive user state
+
+7. Testing:
+   - Unit tests for composables
+   - Integration tests for flows
+   - Error scenario testing
+
+8. Security:
+   - RLS policy verification
+   - Security checklist
+   - Best practices implementation
+
+KEY FEATURES:
+-------------
+- Email/password authentication
+- Designation field storage at Zapcom
+- Form validation and error handling
+- Session persistence
+- Reactive auth state management
+- Protected routes capability
+- User-friendly error messages
+
+TECHNICAL APPROACH:
+-------------------
+- Use existing @supabase/supabase-js package (already installed)
+- Create composables for reusable auth logic
+- Database trigger for automatic profile creation
+- Client-side form validation
+- Server-side RLS policies for security
+
+DATABASE CHANGES:
+-----------------
+- Add `designation TEXT` column to `profiles` table
+- Verify existing RLS policies work with new field
+- Ensure profile creation includes designation
+
+IMPLEMENTATION PHASES:
+----------------------
+Phase 1: Foundation Setup (Steps 4-6, 3)
+Phase 2: Database & Types (Steps 7-8)
+Phase 3: UI Components (Steps 9-11)
+Phase 4: Server-Side Integration (Steps 12-14)
+Phase 5: State Management (Steps 15-16)
+Phase 6: Testing (Steps 17-18)
+Phase 7: Security (Steps 19-20)
+
+NEXT STEPS:
+-----------
+1. Review and approve the implementation plan
+2. Get Supabase anon key from dashboard
+3. Add environment variables to .env file
+4. Begin Phase 1 implementation
+5. Test incrementally after each phase
+
+DOCUMENTATION:
+--------------
+- Full plan available in AUTH_IMPLEMENTATION_PLAN.md
+- Includes code examples, SQL migrations, and architecture
+- User flows documented
+- Error handling strategy defined
+- Security checklist included
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 06, 2025
+Time: 14:18:24 IST
+================================================================================
+
+CHANGE LOG - Supabase Authentication Implementation Complete
+================================================================================
+
+TASK: Implement email/password authentication with Supabase including sign up,
+sign in, and designation storage
+
+DESCRIPTION:
+Fully implemented Supabase email/password authentication system with sign up,
+sign in, and sign out functionality. Users can register with email, password,
+and designation at Zapcom. The system includes form validation, error handling,
+session persistence, and reactive auth state management.
+
+FILES CREATED:
+--------------
+1. front-end/types/auth.d.ts - TypeScript types for authentication
+2. front-end/utils/supabase.ts - Supabase client initialization utility
+3. front-end/composables/useSupabase.ts - Supabase client composable
+4. front-end/composables/useAuth.ts - Main authentication composable
+5. front-end/plugins/04.supabase.client.ts - Supabase auth state listener plugin
+
+FILES MODIFIED:
+---------------
+1. front-end/nuxt.config.ts - Added Supabase configuration
+2. front-end/pages/signup.vue - Complete sign up form with validation
+3. front-end/pages/signin.vue - Complete sign in form with validation
+4. front-end/components/organisms/VHeader.vue - Updated for auth state
+
+DATABASE CHANGES:
+-----------------
+1. Applied migration: add_designation_to_profiles
+   - Added `designation TEXT` column to profiles table
+   - Column stores user's designation/role at Zapcom
+
+IMPLEMENTATION DETAILS:
+-----------------------
+1. Configuration (nuxt.config.ts):
+   - Added Supabase URL and anon key to runtime config
+   - Keys are hardcoded with fallback (can be moved to .env)
+
+2. TypeScript Types (types/auth.d.ts):
+   - AuthUser interface
+   - SignUpData and SignInData interfaces
+   - AuthError and AuthResponse interfaces
+
+3. Supabase Client (utils/supabase.ts):
+   - Singleton pattern for Supabase client
+   - Configured with session persistence and auto-refresh
+
+4. Supabase Composable (composables/useSupabase.ts):
+   - Provides Supabase client to components
+   - Uses runtime config for credentials
+
+5. Auth Composable (composables/useAuth.ts):
+   - Reactive state: user, session, loading, error
+   - Methods: signUp, signIn, signOut, getUser, getSession
+   - Error mapping to user-friendly messages
+   - Automatic profile creation on sign up
+   - Session initialization on mount
+
+6. Sign Up Page (pages/signup.vue):
+   - Form fields: email, password, confirm password, designation
+   - Client-side validation:
+     * Email format validation
+     * Password minimum 6 characters
+     * Password confirmation matching
+     * Designation required
+   - Error display (form and server errors)
+   - Loading states
+   - Link to sign in page
+   - Redirects to home on success
+
+7. Sign In Page (pages/signin.vue):
+   - Form fields: email, password
+   - Client-side validation:
+     * Email format validation
+     * Password required
+   - Error display
+   - Loading states
+   - Link to sign up page
+   - Redirects to home on success
+
+8. Header Component (components/organisms/VHeader.vue):
+   - Conditional rendering based on auth state
+   - Shows user email when authenticated
+   - Shows "Sign Out" button when authenticated
+   - Shows "Sign In" and "Sign Up" buttons when not authenticated
+   - Sign out functionality with redirect
+
+9. Auth Plugin (plugins/04.supabase.client.ts):
+   - Listens to auth state changes
+   - Updates reactive state automatically
+   - Client-side only execution
+
+FEATURES IMPLEMENTED:
+---------------------
+✅ Email/password authentication
+✅ User registration with designation
+✅ User login
+✅ User logout
+✅ Session persistence
+✅ Reactive auth state
+✅ Form validation (client-side)
+✅ Error handling with user-friendly messages
+✅ Loading states
+✅ Protected UI elements (header updates)
+✅ Automatic profile creation
+✅ Designation storage in database
+
+ERROR HANDLING:
+---------------
+- User-friendly error messages mapped from Supabase errors
+- Form validation errors displayed inline
+- Server errors displayed prominently
+- Network errors handled gracefully
+- Common errors:
+  * "User already registered" → "This email is already registered"
+  * "Invalid login credentials" → "Invalid email or password"
+  * "Email not confirmed" → "Please check your email"
+  * "Weak password" → "Password must be at least 6 characters"
+
+SECURITY:
+---------
+- RLS policies on profiles table (existing)
+- Password validation (minimum 6 characters)
+- Email validation
+- Session persistence handled by Supabase
+- Auto token refresh
+- Client-side only auth state initialization
+
+USER FLOWS:
+-----------
+1. Sign Up Flow:
+   - User fills form (email, password, confirm password, designation)
+   - Client-side validation
+   - Submit → Supabase creates auth user
+   - Profile created with designation
+   - Redirect to home
+
+2. Sign In Flow:
+   - User fills form (email, password)
+   - Client-side validation
+   - Submit → Supabase authenticates
+   - Session created
+   - Redirect to home
+
+3. Sign Out Flow:
+   - User clicks "Sign Out"
+   - Session cleared
+   - User state reset
+   - Redirect to home
+
+TECHNICAL NOTES:
+----------------
+- Supabase client uses singleton pattern
+- Auth state is reactive using Vue's useState
+- Session persists in localStorage (handled by Supabase)
+- Profile creation happens automatically on sign up
+- Auth state listener updates UI reactively
+- All auth operations are async with proper error handling
+- Forms use native HTML5 validation + custom Vue validation
+
+TESTING RECOMMENDATIONS:
+------------------------
+- Test sign up with valid data
+- Test sign up with existing email
+- Test sign up with weak password
+- Test sign up with mismatched passwords
+- Test sign in with correct credentials
+- Test sign in with incorrect credentials
+- Test sign out functionality
+- Test session persistence (refresh page)
+- Test header updates based on auth state
+- Test form validation errors
+
+KNOWN LIMITATIONS:
+------------------
+- Email verification not implemented (can be added later)
+- Password reset not implemented (can be added later)
+- No protected routes yet (can be added with middleware)
+- Designation field is text (could be enum/select in future)
+
+NEXT STEPS (OPTIONAL):
+----------------------
+- Add email verification flow
+- Add password reset functionality
+- Create protected routes middleware
+- Add profile management page
+- Add role-based access control
+- Consider making designation a dropdown/select
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 06, 2025
+Time: 14:25:12 IST
+================================================================================
+
+CHANGE LOG - Create Dashboard Page and Update Redirects
+================================================================================
+
+TASK: Create empty dashboard page and redirect users there after sign up/sign in
+
+DESCRIPTION:
+Created a new dashboard page and updated the authentication flow to redirect users
+to the dashboard after successful sign up or sign in instead of the home page.
+
+FILES CREATED:
+--------------
+1. front-end/pages/dashboard.vue - Empty dashboard page with basic structure
+
+FILES MODIFIED:
+---------------
+1. front-end/pages/signup.vue - Updated redirect from "/" to "/dashboard"
+2. front-end/pages/signin.vue - Updated redirect from "/" to "/dashboard"
+
+CHANGES MADE:
+-------------
+1. Created Dashboard Page (pages/dashboard.vue):
+   - Basic page structure with centered content
+   - Page title: "Dashboard"
+   - Subtitle: "Welcome to your dashboard"
+   - SEO meta tags configured
+   - Minimal styling matching site design system
+   - Ready for future dashboard content
+
+2. Updated Sign Up Redirect:
+   - Changed redirect destination from "/" to "/dashboard"
+   - Users now land on dashboard after successful registration
+
+3. Updated Sign In Redirect:
+   - Changed redirect destination from "/" to "/dashboard"
+   - Users now land on dashboard after successful login
+
+TECHNICAL NOTES:
+----------------
+- Dashboard page uses same layout system as other pages
+- Page is accessible at /dashboard route
+- Styling matches existing page patterns (signin/signup)
+- SEO meta tags properly configured
+- Page is currently empty and ready for dashboard content
+
+USER FLOW UPDATES:
+------------------
+1. Sign Up Flow:
+   - User fills form → Validation → Create account → Redirect to /dashboard
+
+2. Sign In Flow:
+   - User enters credentials → Validation → Authenticate → Redirect to /dashboard
+
+TESTING:
+--------
+- No linting errors detected
+- Dashboard page renders correctly
+- Redirects work after sign up
+- Redirects work after sign in
+- Page structure matches design system
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Thursday, November 06, 2025
+Time: 14:40:20 IST
+================================================================================
+
+CHANGE LOG - LeetCode-Style Academy Platform Implementation Complete
+================================================================================
+
+TASK: Implement complete LeetCode-style academy platform with courses, challenges,
+code execution, leaderboard, and progress tracking
+
+DESCRIPTION:
+Fully implemented a comprehensive LeetCode-style academy platform starting from
+the dashboard page. The platform includes courses, coding challenges with real-time
+code execution, leaderboard, progress tracking, and all supporting infrastructure.
+All existing landing page code remains completely untouched.
+
+FILES CREATED:
+--------------
+Database Schema (Supabase):
+- 5 new tables: courses, challenges, submissions, user_progress, user_challenge_progress
+- All tables with proper RLS policies and indexes
+
+TypeScript Types:
+- front-end/types/academy.d.ts - Complete type definitions for all academy entities
+
+Composables:
+- front-end/composables/useCourses.ts - Course data management
+- front-end/composables/useChallenges.ts - Challenge data management
+- front-end/composables/useUserProgress.ts - User progress tracking
+- front-end/composables/useCodeExecution.ts - Code execution integration
+- front-end/composables/useSubmissions.ts - Submission management
+- front-end/composables/useLeaderboard.ts - Leaderboard data
+- front-end/composables/useToast.ts - Toast notification system
+
+Components:
+- front-end/components/academy/CourseCard.vue - Course card display
+- front-end/components/academy/ChallengeCard.vue - Challenge card display
+- front-end/components/academy/CodeEditor.vue - Monaco Editor wrapper
+- front-end/components/academy/TestResults.vue - Test case results display
+- front-end/components/academy/LeaderboardTable.vue - Leaderboard component
+- front-end/components/academy/ProgressBar.vue - Progress indicator
+- front-end/components/shared/ToastContainer.vue - Toast notifications
+
+Pages:
+- front-end/pages/dashboard/index.vue - Dashboard home with courses list
+- front-end/pages/dashboard/courses/[id].vue - Course detail page
+- front-end/pages/dashboard/challenges/[id].vue - Challenge page with code editor
+- front-end/pages/dashboard/leaderboard.vue - Global leaderboard
+
+Server API:
+- front-end/server/api/execute-code.post.ts - Code execution proxy (Judge0)
+- front-end/server/api/submissions.post.ts - Submission saving endpoint
+
+Utilities:
+- front-end/utils/code-templates.ts - Default code templates for languages
+
+FILES MODIFIED:
+---------------
+- front-end/nuxt.config.ts - Added Judge0 API config, academy components directory
+- front-end/pages/dashboard.vue - Redirect to dashboard/index
+- front-end/layouts/default.vue - Added ToastContainer
+
+FEATURES IMPLEMENTED:
+---------------------
+✅ Complete database schema with RLS policies
+✅ Course browsing with search and filtering
+✅ Challenge pages with Monaco code editor
+✅ Real-time code execution via Judge0 API
+✅ Test case validation and results display
+✅ Submission saving and tracking
+✅ User progress tracking (points, streaks, completions)
+✅ Global leaderboard with rankings
+✅ Course progress indicators
+✅ Challenge progress tracking
+✅ Toast notification system
+✅ Keyboard shortcuts (Ctrl+Enter to run code)
+✅ Code saving to localStorage
+✅ Mobile responsive design
+✅ Loading states and error handling
+✅ Authentication integration
+
+================================================================================
+End of Entry
+================================================================================

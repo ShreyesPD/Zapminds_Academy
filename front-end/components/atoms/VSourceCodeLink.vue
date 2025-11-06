@@ -15,7 +15,7 @@ const onLinkClick = () => {
 
 <template>
   <a
-    href="https://github.com/martinlaxenaire/portfolio-2025"
+    href="https://zapcom.ai/"
     target="_blank"
     rel="noopener"
     :class="$style.root"

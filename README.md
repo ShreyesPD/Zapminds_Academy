@@ -27,3 +27,4 @@ Check the [studio README](./studio/README.md).
 ### Nuxt front-end
 
 Check the [front-end README](./front-end/README.md).
+# Zapminds_Academy

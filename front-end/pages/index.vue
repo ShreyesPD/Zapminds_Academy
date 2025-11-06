@@ -12,47 +12,48 @@ const { data, error } = await useLazySanityQuery<HomeQueryResult>(homeQuery);
 // SEO
 const config = useRuntimeConfig();
 
-if (import.meta.server) {
-  useSeoMeta({
-    title: `${data.value?.title} | ${data.value?.seoTitle}`,
-    description: data.value?.seoDescription,
-    ogTitle: `${data.value?.title} | ${data.value?.seoTitle}`,
-    ogUrl: config.public.siteBaseUrl + config.app.baseURL,
-    ogType: "website",
-    ogDescription: data.value?.seoDescription,
-    ogImage:
-      config.public.siteBaseUrl +
-      config.app.baseURL +
-      "images/martin-laxenaire-socials.jpg",
-    twitterCard: "summary_large_image",
-    twitterTitle: `${data.value?.title} | ${data.value?.seoTitle}`,
-    twitterSite: "@martinlaxenaire",
-    twitterCreator: "@martinlaxenaire",
-    twitterDescription: data.value?.seoDescription,
-    twitterImage:
-      config.public.siteBaseUrl +
-      config.app.baseURL +
-      "images/martin-laxenaire-socials.jpg",
-  });
+// Override page title to ZapMinds Academy
+const pageTitle = "ZapMinds Academy";
 
-  useHead({
-    link: [
-      {
-        rel: "canonical",
-        href: config.public.siteBaseUrl + config.app.baseURL,
-      },
-    ],
-    htmlAttrs: {
-      lang: "en",
+useSeoMeta({
+  title: pageTitle,
+  description: data.value?.seoDescription,
+  ogTitle: pageTitle,
+  ogUrl: config.public.siteBaseUrl + config.app.baseURL,
+  ogType: "website",
+  ogDescription: data.value?.seoDescription,
+  ogImage:
+    config.public.siteBaseUrl +
+    config.app.baseURL +
+    "images/martin-laxenaire-socials.jpg",
+  twitterCard: "summary_large_image",
+  twitterTitle: pageTitle,
+  twitterSite: "@martinlaxenaire",
+  twitterCreator: "@martinlaxenaire",
+  twitterDescription: data.value?.seoDescription,
+  twitterImage:
+    config.public.siteBaseUrl +
+    config.app.baseURL +
+    "images/martin-laxenaire-socials.jpg",
+});
+
+useHead({
+  link: [
+    {
+      rel: "canonical",
+      href: config.public.siteBaseUrl + config.app.baseURL,
     },
-  });
-}
+  ],
+  htmlAttrs: {
+    lang: "en",
+  },
+});
 </script>
 
 <template>
   <div>
     <div :class="$style.root" v-if="data">
-      <VHero :baseline="data.baseline" />
+      <VHero :baseline="'Zapminds Academy'" />
 
       <section
         :class="[$style.level, currentLevel >= 1 && $style['level--is-active']]"

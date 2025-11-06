@@ -7,9 +7,13 @@ const runtimeConfig = {
   githubAccessToken: process.env.NUXT_GITHUB_GRAPHQL_TOKEN,
   umamiId: process.env.NUXT_UMAMI_ID,
   umamiHost: process.env.NUXT_UMAMI_HOST,
+  judge0ApiKey: process.env.NUXT_JUDGE0_API_KEY,
+  judge0ApiUrl: process.env.NUXT_JUDGE0_API_URL || "https://judge0-ce.p.rapidapi.com",
   public: {
     siteBaseUrl: process.env.NUXT_SITE_BASE_URL,
     siteDomain: process.env.NUXT_SITE_DOMAIN,
+    supabaseUrl: process.env.NUXT_SUPABASE_URL || "https://qvwnzvhrsstqmftycegj.supabase.co",
+    supabaseAnonKey: process.env.NUXT_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2d256dmhyc3N0cW1mdHljZWdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0MTIxOTQsImV4cCI6MjA3Nzk4ODE5NH0.oj5MaPSsEpjjREYqjTs9BJl6VgTxc3NIabVG3rRBm8Y",
   },
 };
 
@@ -75,6 +79,8 @@ export default defineNuxtConfig({
     "~/components/atoms",
     "~/components/molecules",
     "~/components/organisms",
+    "~/components/academy",
+    "~/components/shared",
   ],
   // https://umami.nuxt.dev/getting-started/installation
   umami: {
