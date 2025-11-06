@@ -8,6 +8,9 @@ definePageMeta({
 
 const { hero, modules, capstone } = agenticAiCourseContent;
 const activeModuleId = ref(modules[0]?.id ?? "");
+const modulePanelId = `${agenticAiCourseContent.courseId}-module-panel`;
+const isModuleListOpen = ref(true);
+const moduleListInner = ref<HTMLElement | null>(null);
 
 const activeModule = computed(() =>
   modules.find((module) => module.id === activeModuleId.value)
@@ -16,6 +19,58 @@ const activeModule = computed(() =>
 const onSelectModule = (moduleId: string) => {
   activeModuleId.value = moduleId;
 };
+
+const toggleModuleList = () => {
+  const panel = moduleListInner.value;
+  if (!panel) {
+    isModuleListOpen.value = !isModuleListOpen.value;
+    return;
+  }
+
+  const currentHeight = panel.scrollHeight;
+
+  if (isModuleListOpen.value) {
+    panel.style.height = `${currentHeight}px`;
+    panel.style.opacity = "1";
+    requestAnimationFrame(() => {
+      panel.style.height = "0px";
+      panel.style.opacity = "0";
+    });
+  } else {
+    panel.style.height = "0px";
+    panel.style.opacity = "0";
+    requestAnimationFrame(() => {
+      const target = panel.scrollHeight || currentHeight;
+      panel.style.height = `${target}px`;
+      panel.style.opacity = "1";
+    });
+  }
+
+  isModuleListOpen.value = !isModuleListOpen.value;
+};
+
+const onPanelTransitionEnd = (event: TransitionEvent) => {
+  if (event.propertyName !== "height") return;
+  const panel = moduleListInner.value;
+  if (!panel) return;
+  if (isModuleListOpen.value) {
+    panel.style.height = "auto";
+  }
+};
+
+onMounted(() => {
+  const panel = moduleListInner.value;
+  if (!panel) return;
+  panel.style.height = "auto";
+  panel.style.opacity = "1";
+  panel.addEventListener("transitionend", onPanelTransitionEnd);
+});
+
+onBeforeUnmount(() => {
+  const panel = moduleListInner.value;
+  if (!panel) return;
+  panel.removeEventListener("transitionend", onPanelTransitionEnd);
+});
 </script>
 
 <template>
@@ -36,29 +91,66 @@ const onSelectModule = (moduleId: string) => {
           </div>
         </div>
 
-        <aside :class="$style['module-list']">
-          <h2>Modules</h2>
-          <ol>
-            <li
-              v-for="(module, index) in modules"
-              :key="module.id"
-              :class="[
-                $style['module-list__item'],
-                module.id === activeModuleId && $style['module-list__item--is-active'],
-              ]"
+        <aside
+          :class="[
+            $style['module-list'],
+            !isModuleListOpen && $style['module-list--collapsed'],
+          ]"
+        >
+          <div :class="$style['module-list__header']">
+            <h2>Modules</h2>
+            <button
+              type="button"
+              :class="$style['module-list__toggle']"
+              :aria-expanded="isModuleListOpen"
+              :aria-controls="modulePanelId"
+              @click="toggleModuleList"
             >
-              <button type="button" @click="onSelectModule(module.id)">
-                <span :class="$style['module-index']">
-                  {{ (index + 1).toString().padStart(2, '0') }}
-                </span>
-                <div>
-                  <span :class="$style['module-duration']">{{ module.duration }}</span>
-                  <strong>{{ module.title }}</strong>
-                  <span :class="$style['module-difficulty']">{{ module.difficulty }}</span>
-                </div>
-              </button>
-            </li>
-          </ol>
+              <span>{{ isModuleListOpen ? "Hide" : "Show" }}</span>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 9.5L8 5.5L12 9.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div
+            ref="moduleListInner"
+            :id="modulePanelId"
+            :class="$style['module-list__panel']"
+            :aria-hidden="(!isModuleListOpen).toString()"
+          >
+            <ol role="list">
+              <li
+                v-for="(module, index) in modules"
+                :key="module.id"
+                :class="[
+                  $style['module-list__item'],
+                  module.id === activeModuleId && $style['module-list__item--is-active'],
+                ]"
+              >
+                <button type="button" @click="onSelectModule(module.id)">
+                  <span :class="$style['module-index']">{{ (index + 1).toString().padStart(2, '0') }}</span>
+                  <div>
+                    <span :class="$style['module-duration']">{{ module.duration }}</span>
+                    <strong>{{ module.title }}</strong>
+                    <span :class="$style['module-difficulty']">{{ module.difficulty }}</span>
+                  </div>
+                </button>
+              </li>
+            </ol>
+          </div>
         </aside>
       </div>
     </section>
@@ -246,27 +338,85 @@ const onSelectModule = (moduleId: string) => {
   box-shadow: 0 25px 75px color-mix(in srgb, #000 18%, transparent);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
+  margin-left: 1.5rem;
 
-  h2 {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  &__header h2 {
     font-family: var(--display-font);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin: 0;
   }
 
-  ol {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  &__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--foreground-color) 18%, transparent);
+    background: color-mix(in srgb, var(--foreground-color) 8%, transparent);
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+    transition: border-color 0.25s ease, background 0.25s ease;
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--foreground-color);
+      background: color-mix(in srgb, var(--foreground-color) 14%, transparent);
+    }
+
+    svg {
+      width: 0.85rem;
+      height: 0.85rem;
+      transition: transform 0.25s ease;
+      transform: rotate(180deg);
+    }
+  }
+
+  &__panel {
     display: grid;
     gap: 1rem;
+    overflow: hidden;
+    height: auto;
+    opacity: 1;
+    transition: height 0.35s ease, opacity 0.35s ease;
+
+    &[aria-hidden="true"] {
+      height: 0 !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 1rem;
+    }
   }
 
   @media screen and (max-aspect-ratio: 12 / 8) {
     grid-column: 3 / 23;
     order: -1;
+    margin-left: 0;
   }
+}
+
+.module-list--collapsed .module-list__toggle svg {
+  transform: rotate(0deg);
 }
 
 .module-list__item {
