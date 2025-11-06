@@ -768,6 +768,16 @@ const weeklyGoalPercent = computed(() => {
   return Math.round((weeklyGoal.completed / weeklyGoal.total) * 100);
 });
 
+const greetingParts = computed(() => {
+  const message = UIElements.dashboard.greeting(studentName.value);
+  const [leadRaw, highlightRaw] = message.split(",");
+  const lead = leadRaw?.trim?.() ?? "Welcome back";
+  const fallbackHighlight =
+    studentName.value.split(" ")[0] ?? "Learner";
+  const highlight = highlightRaw?.trim?.() || fallbackHighlight;
+  return { lead, highlight };
+});
+
 const onSelectCourse = (id: string) => {
   selectedCourseId.value = id;
 };
@@ -794,11 +804,18 @@ const onLogout = async () => {
   <section :class="$style.root">
     <div class="container grid" :class="$style.hero">
       <div :class="$style['hero-primary']">
-        <span :class="$style.badge">
-          {{ UIElements.dashboard.activeDayStreak(streakDays) }}
-        </span>
+        <div :class="$style['hero-primary__gradient']"></div>
+        <div :class="$style['hero-primary__flare']"></div>
+        <header :class="$style['hero-primary__header']">
+          <span :class="$style.badge">
+            {{ UIElements.dashboard.activeDayStreak(streakDays) }}
+          </span>
+          <span :class="$style['hero-primary__season']">Zap Season · Wave 04</span>
+        </header>
+
         <h1 :class="$style.title">
-          {{ UIElements.dashboard.greeting(studentName) }}
+          <span>{{ greetingParts.lead }},</span>
+          <strong>{{ greetingParts.highlight }}</strong>
         </h1>
         <p :class="$style.subtitle">
           {{ UIElements.dashboard.headline }}
@@ -806,22 +823,25 @@ const onLogout = async () => {
 
         <div :class="$style['hero-stats']">
           <div>
-            <span :class="$style['hero-stats__label']">XP</span>
+            <span :class="$style['hero-stats__label']">Lifetime XP</span>
             <span :class="$style['hero-stats__value']">
               {{ UIElements.dashboard.xpLabel(totalXp) }}
             </span>
+            <small>Next tier at {{ totalXp + 380 }} XP</small>
           </div>
           <div>
             <span :class="$style['hero-stats__label']">Solved today</span>
             <span :class="$style['hero-stats__value']">
               {{ solvedToday }}
             </span>
+            <small>Daily quest resets in 6 hrs</small>
           </div>
           <div>
             <span :class="$style['hero-stats__label']">Review queue</span>
             <span :class="$style['hero-stats__value']">
               {{ reviewQueue }}
             </span>
+            <small>Earn +40 XP with feedback</small>
           </div>
         </div>
 
@@ -1057,15 +1077,16 @@ const onLogout = async () => {
 }
 
 .hero-primary {
+  position: relative;
   grid-column: 3 / 15;
-  background: color-mix(in srgb, var(--foreground-color) 8%, transparent);
-  border-radius: 2rem;
-  padding: 3rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  border: 1px solid color-mix(in srgb, var(--foreground-color) 15%, transparent);
-  box-shadow: 0 25px 80px color-mix(in srgb, #000 22%, transparent);
+  border-radius: 2.4rem;
+  padding: 3.4rem;
+  display: grid;
+  gap: 1.7rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--foreground-color) 20%, transparent);
+  background: color-mix(in srgb, var(--background-color) 90%, transparent);
+  box-shadow: 0 35px 90px color-mix(in srgb, #000 28%, transparent);
 
   @media screen and (max-aspect-ratio: 12 / 8) {
     grid-column: 2 / 12;
@@ -1074,51 +1095,132 @@ const onLogout = async () => {
   @media screen and (orientation: portrait) {
     grid-column: 1 / -1;
   }
+
+  &__gradient,
+  &__flare {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  &__gradient {
+    background:
+      radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--accent-color, #ffd454) 38%, transparent) 0%, transparent 55%),
+      radial-gradient(circle at 100% 15%, color-mix(in srgb, var(--color-palette-2, #0b66ff) 30%, transparent) 0%, transparent 60%);
+    opacity: 0.55;
+  }
+
+  &__flare {
+    background:
+      linear-gradient(120deg, color-mix(in srgb, var(--foreground-color) 15%, transparent) 0%, transparent 40%),
+      radial-gradient(circle at 85% 120%, color-mix(in srgb, var(--color-palette-4, #6c5ce7) 24%, transparent) 0%, transparent 60%);
+    mix-blend-mode: lighten;
+    opacity: 0.35;
+    animation: heroPulse 12s ease-in-out infinite;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__season {
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--foreground-color) 75%, transparent);
+    background: color-mix(in srgb, var(--background-color) 40%, transparent);
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--foreground-color) 18%, transparent);
+  }
 }
 
 .badge {
   display: inline-flex;
-  align-self: flex-start;
-  padding: 0.35rem 1rem;
+  padding: 0.4rem 1.05rem;
   border-radius: 999px;
-  border: 1px solid currentColor;
   font-family: var(--display-font);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.7rem;
+  letter-spacing: 0.13em;
+  font-size: 0.72rem;
+  color: var(--background-color);
+  background: linear-gradient(120deg, #0b66ff 0%, #00f0ff 100%);
+  box-shadow: 0 12px 28px color-mix(in srgb, #0b66ff 30%, transparent);
 }
 
 .title {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.3rem;
   @include section-title;
   transform: none;
   -webkit-text-stroke: 0;
   text-align: left;
+
+  span {
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  strong {
+    display: block;
+    font-size: clamp(2.7rem, 6vw, 3.6rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
 }
 
 .subtitle {
-  max-width: 32ch;
-  font-size: 1.1rem;
-  opacity: 0.85;
-  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+  max-width: 38ch;
+  font-size: 1.05rem;
+  opacity: 0.88;
+  line-height: 1.65;
 }
 
 .hero-stats {
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+
+  div {
+    padding: 1rem 1.1rem;
+    border-radius: 1.3rem;
+    backdrop-filter: blur(12px);
+    background: color-mix(in srgb, var(--background-color) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--foreground-color) 12%, transparent);
+    box-shadow: 0 20px 40px color-mix(in srgb, #000 25%, transparent);
+    display: grid;
+    gap: 0.35rem;
+  }
 
   &__label {
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    opacity: 0.65;
+    opacity: 0.68;
   }
 
   &__value {
-    display: block;
     font-family: var(--display-font);
-    font-size: 1.4rem;
-    margin-top: 0.25rem;
+    font-size: 1.6rem;
+    letter-spacing: 0.04em;
+  }
+
+  small {
+    font-size: 0.72rem;
+    opacity: 0.6;
   }
 }
 
@@ -1140,15 +1242,15 @@ const onLogout = async () => {
   font-family: var(--display-font);
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  background: var(--foreground-color);
-  color: var(--background-color);
+  background: linear-gradient(115deg, #0b66ff 0%, #00f0ff 100%);
+  color: #040404;
   transition: transform 0.35s ease(out-cubic),
     box-shadow 0.35s ease(out-cubic);
 
   &:hover,
   &:focus-visible {
     transform: translate3d(0, -0.2rem, 0);
-    box-shadow: 0 18px 45px color-mix(in srgb, var(--foreground-color) 25%, transparent);
+    box-shadow: 0 18px 45px color-mix(in srgb, #0b66ff 35%, transparent);
   }
 }
 
@@ -1156,8 +1258,8 @@ const onLogout = async () => {
   border: 1px solid color-mix(in srgb, var(--foreground-color) 25%, transparent);
   border-radius: 999px;
   padding: 0.85rem 1.35rem;
-  background: transparent;
-  color: inherit;
+  background: color-mix(in srgb, var(--background-color) 75%, transparent);
+  color: var(--foreground-color);
   font-family: var(--display-font);
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -1843,6 +1945,19 @@ const onLogout = async () => {
   line-height: 1.65;
   overflow-x: auto;
   border: 1px solid color-mix(in srgb, var(--foreground-color) 15%, transparent);
+}
+
+@keyframes heroPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: rotate(0deg) scale(1);
+  }
+
+  50% {
+    opacity: 0.65;
+    transform: rotate(4deg) scale(1.05);
+  }
 }
 
 </style>
