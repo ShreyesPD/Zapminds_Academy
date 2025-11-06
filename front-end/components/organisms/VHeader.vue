@@ -1,9 +1,22 @@
 <script lang="ts" setup>
+import { UIElements } from "~/assets/static-data/ui-elements";
+
 const { currentFeature } = useLevelExperience();
 
 const header = useTemplateRef("header");
 
 const { isVisible } = useIsVisible(header);
+const { isAuthenticated } = useStudentAuth();
+
+const portalRoute = computed(() =>
+  isAuthenticated.value ? "/dashboard" : "/login"
+);
+
+const portalCtaLabel = computed(() =>
+  isAuthenticated.value
+    ? UIElements.auth.dashboardCta
+    : UIElements.auth.primaryCta
+);
 </script>
 
 <template>
@@ -15,6 +28,15 @@ const { isVisible } = useIsVisible(header);
       <div :class="$style.inner">
         <nav :class="$style.nav">
           <VHeaderSiteTitleLink />
+
+          <NuxtLink :class="$style['portal-link']" :to="portalRoute">
+            <span :class="$style['portal-link__label']">
+              {{ UIElements.auth.portalLabel }}
+            </span>
+            <span :class="$style['portal-link__cta']">
+              {{ portalCtaLabel }}
+            </span>
+          </NuxtLink>
         </nav>
 
         <div :class="$style.display">
@@ -84,6 +106,9 @@ const { isVisible } = useIsVisible(header);
 }
 
 .nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   font-family: var(--display-font);
   text-transform: uppercase;
   flex-shrink: 1;
@@ -99,6 +124,48 @@ const { isVisible } = useIsVisible(header);
   .root--is-visible & {
     transform: translate3d(0, 0, 0);
     opacity: 1;
+  }
+}
+
+.portal-link {
+  pointer-events: auto;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid var(--foreground-color);
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.75rem;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  transition: transform 0.35s ease(out-cubic),
+    background-color 0.35s ease(out-cubic), color 0.35s ease(out-cubic);
+
+  @media (prefers-reduced-motion) {
+    transition: none !important;
+  }
+
+  &:hover,
+  &:focus-visible {
+    transform: translate3d(0, -0.2rem, 0);
+    background: var(--foreground-color);
+    color: var(--background-color);
+  }
+
+  &__label {
+    font-size: 0.6rem;
+    opacity: 0.7;
+    letter-spacing: 0.12em;
+  }
+
+  &__cta {
+    font-size: 0.85rem;
+  }
+
+  @media screen and (max-width: 640px) {
+    display: none;
   }
 }
 

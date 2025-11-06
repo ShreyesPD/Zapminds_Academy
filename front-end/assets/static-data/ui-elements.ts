@@ -68,4 +68,62 @@ export const UIElements = {
       })();
     },
   },
+  auth: {
+    portalLabel: "Student portal",
+    title: "Welcome back",
+    subtitle: "Sign in to continue building with Zapminds Academy.",
+    emailLabel: "Email address",
+    passwordLabel: "Password",
+    rememberMe: "Keep me signed in",
+    forgotPassword: "Forgot password?",
+    primaryCta: "Log in",
+    dashboardCta: "Open dashboard",
+    logoutCta: "Sign out",
+    secondaryTitle: "Other ways to access",
+    ssoProviders: {
+      google: "Continue with Google",
+      github: "Continue with GitHub",
+      microsoft: "Continue with Microsoft",
+    },
+    createAccountPrompt: "New to Zapminds Academy?",
+    createAccountCta: "Create an account",
+    supportNote:
+      "Need help? Reach out to support@zapminds.academy and we'll get you unstuck.",
+  },
+  dashboard: {
+    greeting: (name: string) => `Welcome back, ${name}`,
+    headline: "Keep pushing your problem-solving superpowers.",
+    activeDayStreak: (days: number) => `${days}-day streak`,
+    xpLabel: (points: number) => `${points} XP`,
+    continueCta: "Resume last session",
+    coursesTitle: "Active courses",
+    courseProgressLabel: (completed: number, total: number) =>
+      `${completed}/${total} modules`,
+    nextUpLabel: "Next up",
+    difficultyLabels: {
+      beginner: "Beginner",
+      intermediate: "Intermediate",
+      advanced: "Advanced",
+      expert: "Expert",
+    },
+    courseAction: "Open course",
+    insightsTitle: "Learning insights",
+    insights: {
+      solvedToday: (count: number) =>
+        `${count} challenge${count === 1 ? "" : "s"} solved today`,
+      weeklyGoal: "Weekly goal",
+      reviewQueue: (count: number) =>
+        `${count} problem${count === 1 ? "" : "s"} ready for review`,
+    },
+    topicsTitle: "Course outline",
+    topicStatus: {
+      completed: "Completed",
+      inProgress: "In progress",
+      locked: "Locked",
+    },
+    codePreviewLabel: (language: string) => `${language} snippet`,
+    leaderboardTitle: "Leaderboard",
+    leaderboardUpdated: "Updated in real-time",
+    leaderboardCta: "View full leaderboard",
+  },
 };
