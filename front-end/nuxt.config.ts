@@ -10,6 +10,9 @@ const runtimeConfig = {
   public: {
     siteBaseUrl: process.env.NUXT_SITE_BASE_URL,
     siteDomain: process.env.NUXT_SITE_DOMAIN,
+    // Supabase runtime variables (set in your environment or hosting platform)
+    supabaseUrl: process.env.NUXT_SUPABASE_URL,
+    supabaseAnonKey: process.env.NUXT_SUPABASE_ANON_KEY,
   },
 };
 

@@ -23,6 +23,7 @@
     "monaco-editor": "^0.54.0",
     "nuxt": "^3.19.0",
     "nuxt-umami": "3.2.0",
+    "supabase": "^2.54.11",
     "tweakpane": "^4.0.5",
     "vue": "latest",
     "vue-router": "latest"

@@ -6,83 +6,39 @@ definePageMeta({
   middleware: ["redirect-if-authenticated"],
 });
 
-const pageTitle = "Log in – Zapminds Academy";
+const pageTitle = "Signup – Zapminds Academy";
 
 useSeoMeta({
   title: pageTitle,
   description: UIElements.auth.subtitle,
 });
 
-const credentials = reactive({
+const form = reactive({
+  name: "",
   email: "",
   password: "",
-  remember: false,
+  remember: true,
 });
 
-const ssoProviders = [
-  {
-    id: "google",
-    label: UIElements.auth.ssoProviders.google,
-  },
-  {
-    id: "github",
-    label: UIElements.auth.ssoProviders.github,
-  },
-  {
-    id: "microsoft",
-    label: UIElements.auth.ssoProviders.microsoft,
-  },
-];
-
-const highlights = [
-  {
-    title: "Curated DSA roadmap",
-    description:
-      "Master data structures with progressive, interview-ready problems.",
-  },
-  {
-    title: "Live code reviews",
-    description: "Get annotated feedback from mentors after each milestone.",
-  },
-  {
-    title: "Weekly leaderboards",
-    description: "Climb the rankings while you sharpen your problem solving.",
-  },
-];
-
+const { signup } = useStudentAuth();
 const router = useRouter();
-const route = useRoute(); // ✅ ADD THIS
-const { login } = useStudentAuth();
-
 const errorMessage = ref<string | null>(null);
-
-const navigateToDashboard = async () => {
-  // ✅ MODIFY THIS
-  errorMessage.value = null;
-  const res = await login({
-    email: credentials.email,
-    password: credentials.password,
-  });
-
-  if (res?.error) {
-    errorMessage.value = res.error.message || "Login failed";
-    return;
-  }
-
-  credentials.password = "";
-  const redirectTo = (route.query.redirect as string) || "/dashboard";
-  await router.replace(redirectTo); // replace() avoids back-nav to login
-};
 
 const onSubmit = async (e: Event) => {
   e.preventDefault();
-  await navigateToDashboard();
-};
+  errorMessage.value = null;
 
-const onProviderLogin = async (providerId: string) => {
-  // TODO: hook up OAuth providers (Google/GitHub) if configured in Supabase
-  const fallbackEmail = credentials.email || `${providerId}@zapminds.academy`;
-  // As fallback, just navigate with the entered or synthetic email
+  const res = await signup({
+    name: form.name,
+    email: form.email,
+    password: form.password,
+  });
+
+  if (res?.error) {
+    errorMessage.value = res.error.message || "Signup failed";
+    return;
+  }
+
   await router.push("/dashboard");
 };
 </script>
@@ -92,74 +48,71 @@ const onProviderLogin = async (providerId: string) => {
     <div class="container grid" :class="$style.container">
       <aside :class="$style.panel">
         <span :class="$style.badge">{{ UIElements.auth.portalLabel }}</span>
-        <h1 :class="$style.title">
-          <VAnimatedTextByLetters
-            :label="UIElements.auth.title"
-            :align="'left'"
-          />
-        </h1>
+        <h1 :class="$style.title">Create your account</h1>
         <p :class="$style.subtitle">{{ UIElements.auth.subtitle }}</p>
-
-        <ul :class="$style.highlights">
-          <li v-for="item in highlights" :key="item.title">
-            <span :class="$style['highlights__title']">{{ item.title }}</span>
-            <span :class="$style['highlights__description']">{{
-              item.description
-            }}</span>
-          </li>
-        </ul>
-
-        <p :class="$style.support">
-          {{ UIElements.auth.supportNote }}
-        </p>
       </aside>
 
       <div :class="$style.form">
         <form :class="$style['form-card']" @submit="onSubmit">
           <fieldset :class="$style['field-group']">
-            <label :class="$style.label" for="email">{{
-              UIElements.auth.emailLabel
-            }}</label>
+            <label :class="$style.label" for="name">Full name</label>
             <input
-              v-model="credentials.email"
-              autocomplete="email"
-              id="email"
-              name="email"
+              v-model="form.name"
+              id="name"
+              name="name"
               required
-              type="email"
+              type="text"
               :class="$style.input"
             />
           </fieldset>
 
           <fieldset :class="$style['field-group']">
-            <label :class="$style.label" for="password">
-              {{ UIElements.auth.passwordLabel }}
-            </label>
+            <label :class="$style.label" for="email">{{
+              UIElements.auth.emailLabel
+            }}</label>
             <input
-              v-model="credentials.password"
-              autocomplete="current-password"
+              v-model="form.email"
+              id="email"
+              name="email"
+              required
+              type="email"
+              autocomplete="email"
+              :class="$style.input"
+            />
+          </fieldset>
+
+          <fieldset :class="$style['field-group']">
+            <label :class="$style.label" for="password">{{
+              UIElements.auth.passwordLabel
+            }}</label>
+            <input
+              v-model="form.password"
               id="password"
               name="password"
               required
               type="password"
+              autocomplete="new-password"
               :class="$style.input"
             />
           </fieldset>
 
           <div :class="$style['form-meta']">
-            <label :class="$style.checkbox">
-              <input v-model="credentials.remember" type="checkbox" />
+            <label
+              :class="$style.checkbox"
+              title="Keep me signed in on this device"
+            >
+              <input v-model="form.remember" type="checkbox" />
               <span>{{ UIElements.auth.rememberMe }}</span>
             </label>
 
-            <NuxtLink to="/login/reset" :class="$style.link">
-              {{ UIElements.auth.forgotPassword }}
+            <NuxtLink to="/login" :class="$style.link">
+              {{
+                UIElements.auth.alreadyHaveAccount ?? "Have an account? Log in"
+              }}
             </NuxtLink>
           </div>
 
-          <button type="submit" :class="$style.submit">
-            {{ UIElements.auth.primaryCta }}
-          </button>
+          <button type="submit" :class="$style.submit">Create account</button>
 
           <p
             v-if="errorMessage"
@@ -169,25 +122,9 @@ const onProviderLogin = async (providerId: string) => {
             {{ errorMessage }}
           </p>
 
-          <div :class="$style.divider">
-            <span></span>
-            <span>{{ UIElements.auth.secondaryTitle }}</span>
-            <span></span>
-          </div>
-
-          <ul :class="$style.providers">
-            <li v-for="provider in ssoProviders" :key="provider.id">
-              <button type="button" @click="onProviderLogin(provider.id)">
-                {{ provider.label }}
-              </button>
-            </li>
-          </ul>
-
           <p :class="$style['form-footer']">
-            {{ UIElements.auth.createAccountPrompt }}
-            <NuxtLink to="/signup" :class="$style.link">
-              {{ UIElements.auth.createAccountCta }}
-            </NuxtLink>
+            Already have an account?
+            <NuxtLink to="/login" :class="$style.link">Log in</NuxtLink>
           </p>
         </form>
       </div>
@@ -244,7 +181,14 @@ const onProviderLogin = async (providerId: string) => {
 }
 
 .title {
-  @include section-title;
+  /* replaced mixin with safe inline styles */
+  font-family: var(--display-font);
+  font-weight: 800;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: clamp(2rem, 3vw + 1rem, 3.25rem);
+  line-height: 1.1;
+  margin: 0;
   transform: none;
   -webkit-text-stroke: 0;
   text-align: left;
@@ -255,43 +199,6 @@ const onProviderLogin = async (providerId: string) => {
   font-size: 1.2rem;
   line-height: 1.5;
   opacity: 0.85;
-}
-
-.highlights {
-  list-style: none;
-  display: grid;
-  gap: 1.25rem;
-  padding: 0;
-  margin: 0;
-
-  li {
-    background: color-mix(in srgb, var(--foreground-color) 6%, transparent);
-    border: 1px solid
-      color-mix(in srgb, var(--foreground-color) 15%, transparent);
-    border-radius: 1.25rem;
-    padding: 1.15rem 1.4rem;
-    backdrop-filter: blur(12px);
-  }
-}
-
-.highlights__title {
-  display: block;
-  font-family: var(--display-font);
-  text-transform: uppercase;
-  font-size: 0.95rem;
-}
-
-.highlights__description {
-  display: block;
-  font-size: 0.95rem;
-  opacity: 0.75;
-  margin-top: 0.35rem;
-  line-height: 1.4;
-}
-
-.support {
-  font-size: 0.85rem;
-  opacity: 0.7;
 }
 
 .form {
