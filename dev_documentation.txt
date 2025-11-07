@@ -773,3 +773,111 @@ TESTING:
 ================================================================================
 End of Entry
 ================================================================================
+
+Date: Friday, November 7, 2025
+Time: 09:21:24 IST
+================================================================================
+
+CHANGE LOG - Dashboard CTA Styling Refresh
+================================================================================
+
+TASK: Enhance dashboard CTA color mixing to align with palette accents
+
+DESCRIPTION:
+Updated the interactive call-to-action styling within the dashboard page to better
+leverage the green accent from the shared color palette, improving visual emphasis
+while keeping gradients consistent with the background.
+
+FILES MODIFIED:
+----------------
+1. front-end/pages/dashboard/index.vue
+
+CHANGES MADE:
+-------------
+1. Replaced generic foreground color mixes with `var(--color-palette-3, #9dff5c)` in
+   the CTA radial gradients for sharper highlight emphasis.
+2. Adjusted hover and active border colors to blend palette accents with the base
+   foreground color for improved contrast.
+3. Increased CTA box-shadow intensity to reinforce interactive state depth using the
+   updated palette mix ratios.
+
+TESTING:
+--------
+- Visual validation in local dev server confirmed updated styling blends correctly.
+- No linting issues detected.
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Friday, November 7, 2025
+Time: 09:41:00 IST
+================================================================================
+
+CHANGE LOG - Server-backed Code Playground Execution
+================================================================================
+
+TASK: Replace in-browser Pyodide runner with secure server-side execution pipeline.
+
+DESCRIPTION:
+Migrated the course playground from an embedded Pyodide runtime to a Nuxt server API
+that proxies code submissions to a sandboxed Python process. This centralises
+execution, improves reliability, and keeps future multi-language support flexible.
+
+FILES MODIFIED / ADDED:
+-----------------------
+1. front-end/components/organisms/VCodePlayground.vue
+2. front-end/server/api/playground.post.ts
+3. front-end/server/utils/python-runner.ts
+
+CHANGES MADE:
+-------------
+1. Refactored the Vue component to post exercise code/tests to `/api/playground`,
+   introduced typed payload/result models, and improved runtime messaging.
+2. Added a Nuxt server handler that validates payloads, enforces Python-only mode,
+   and delegates execution to a utility runner with actionable errors.
+3. Implemented `python-runner.ts` to call `python3 -c` with generated scripts per
+   test, capture stdout/result values, normalise pass/fail heuristics, and guard
+   against timeouts or buffer overflows.
+
+TESTING:
+--------
+- Manual smoke test: `curl -X POST http://localhost:3000/api/playground` with a
+  sample `add` function confirmed server execution and pass status responses.
+- Local dev server (`npm run dev`) continues to run without runtime errors.
+
+================================================================================
+End of Entry
+================================================================================
+
+Date: Friday, November 7, 2025
+Time: 11:52:14 IST
+================================================================================
+
+CHANGE LOG - Leaderboard Hero CTA Simplification
+================================================================================
+
+TASK: Streamline leaderboard hero actions to focus on primary navigation.
+
+DESCRIPTION:
+Removed the unused "Challenge a teammate" secondary button from the leaderboard
+hero area so the layout centres on the return-to-dashboard action and avoids
+misleading users with non-functional CTAs.
+
+FILES MODIFIED:
+----------------
+1. front-end/pages/leaderboard/index.vue
+
+CHANGES MADE:
+-------------
+1. Deleted the secondary `<button>` element inside the hero actions container.
+2. Verified spacing remains consistent with a single CTA.
+
+TESTING:
+--------
+- Manually reloaded `/leaderboard` in the dev server; layout renders correctly with
+a single CTA.
+
+================================================================================
+End of Entry
+================================================================================

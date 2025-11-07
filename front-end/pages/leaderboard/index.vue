@@ -257,9 +257,6 @@ const switchMode = (mode: "overall" | "weekly") => {
 
           <div :class="$style['hero-actions']">
             <NuxtLink to="/" :class="$style['hero-button']">Back to dashboard</NuxtLink>
-            <button type="button" :class="$style['hero-secondary']">
-              Challenge a teammate
-            </button>
           </div>
         </div>
 

@@ -2,31 +2,49 @@
 import { onBeforeUnmount, onMounted, nextTick, ref, shallowRef, watch } from "vue";
 import loader from "@monaco-editor/loader";
 import type { editor as MonacoEditorNS, IDisposable } from "monaco-editor";
-import type {
-  PythonExercise,
-  PythonExerciseTest,
-} from "~/utils/python-foundations-data";
+
+type PlaygroundTest = {
+  id: string;
+  description: string;
+  assertion: string;
+  expected?: string;
+};
+
+type PlaygroundExercise = {
+  starterCode: string;
+  hints: string[];
+  tests: PlaygroundTest[];
+  language?: string;
+};
+
+type PlaygroundResult = {
+  id: string;
+  status: "passed" | "failed";
+  output: string;
+};
+
+type PlaygroundResponse = {
+  results: PlaygroundResult[];
+};
 
 const props = defineProps<{
-  exercise: PythonExercise;
+  exercise: PlaygroundExercise;
 }>();
 
 const editorContainer = ref<HTMLDivElement | null>(null);
-const monacoEditor = shallowRef<MonacoEditorNS.IStandaloneCodeEditor | null>(
-  null
-);
+const monacoEditor = shallowRef<MonacoEditorNS.IStandaloneCodeEditor | null>(null);
 const monacoDisposables: IDisposable[] = [];
 
 const isEditorReady = ref(false);
 const isRunning = ref(false);
+const runtimeMessage = ref<string | null>(null);
 const results = ref<
   Array<{
-    test: PythonExerciseTest;
-    status: "pending" | "passed" | "failed";
+    test: PlaygroundTest;
+    status: "passed" | "failed";
     output: string;
   }>
 >([]);
-const runtimeMessage = ref<string | null>(null);
 
 const ensureEditor = async () => {
   if (isEditorReady.value || !editorContainer.value) {
@@ -78,152 +96,40 @@ onBeforeUnmount(() => {
   monacoDisposables.forEach((disposable) => disposable.dispose());
 });
 
-type PyodideLoader = {
-  loadPyodide: (options: { indexURL: string }) => Promise<PyodideInterface>;
-};
-
-type PyodideInterface = {
-  runPythonAsync: (code: string) => Promise<any>;
-};
-
-let pyodideInstance: PyodideInterface | null = null;
-let pyodideLoading: Promise<PyodideInterface> | null = null;
-
-declare global {
-  interface Window {
-    loadPyodide?: PyodideLoader["loadPyodide"];
-  }
-}
-
-const loadPyodideScript = () =>
-  new Promise<void>((resolve, reject) => {
-    if (window.loadPyodide) {
-      resolve();
-      return;
-    }
-
-    const existing = document.querySelector<HTMLScriptElement>(
-      'script[data-pyodide="true"]'
-    );
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener(
-        "error",
-        (event) => reject(event),
-        {
-          once: true,
-        }
-      );
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js";
-    script.async = true;
-    script.dataset.pyodide = "true";
-    script.onload = () => resolve();
-    script.onerror = (event) => reject(event);
-    document.head.appendChild(script);
-  });
-
-const ensurePyodide = async () => {
-  if (pyodideInstance) {
-    return pyodideInstance;
-  }
-
-  if (!pyodideLoading) {
-    pyodideLoading = (async () => {
-      await loadPyodideScript();
-      if (!window.loadPyodide) {
-        throw new Error("Pyodide failed to load.");
-      }
-
-      return window.loadPyodide({
-        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/",
-      });
-    })();
-  }
-
-  pyodideInstance = await pyodideLoading;
-  return pyodideInstance as PyodideInterface;
-};
-
-const resetEnvironment = async (pyodide: PyodideInterface) => {
-  await pyodide.runPythonAsync(`
-import builtins
-globals().clear()
-globals()["__builtins__"] = builtins
-`);
-};
-
 const runTests = async () => {
   if (!monacoEditor.value) return;
 
   isRunning.value = true;
-  results.value = props.exercise.tests.map((test) => ({
-    test,
-    status: "pending",
-    output: "",
-  }));
-  runtimeMessage.value = "Booting Python runtime...";
+  runtimeMessage.value = "Sending code to runner…";
 
   try {
-    const pyodide = await ensurePyodide();
-    runtimeMessage.value = "Preparing sandbox…";
-    await resetEnvironment(pyodide);
-
     const userCode = monacoEditor.value.getValue();
-    await pyodide.runPythonAsync(userCode);
+    const response = await $fetch<PlaygroundResponse>("/api/playground", {
+      method: "POST",
+      body: {
+        language: props.exercise.language ?? "python",
+        code: userCode,
+        tests: props.exercise.tests,
+      },
+    });
 
+    const mapped = props.exercise.tests.map((test) => {
+      const match = response.results.find((result) => result.id === test.id);
+      return {
+        test,
+        status: match?.status ?? "failed",
+        output: match?.output ?? "",
+      };
+    });
+
+    results.value = mapped;
     runtimeMessage.value = null;
-
-    const updated = [];
-    for (const result of results.value) {
-      const testCode = result.test.assertion.trim();
-      let output = "";
-      let status: "passed" | "failed" = "failed";
-
-      try {
-        const evaluation = await pyodide.runPythonAsync(testCode);
-        const rendered =
-          typeof evaluation === "string"
-            ? evaluation
-            : typeof evaluation === "boolean"
-            ? evaluation
-              ? "True"
-              : "False"
-            : evaluation === undefined || evaluation === null
-            ? "None"
-            : typeof evaluation === "number"
-            ? evaluation.toString()
-            : evaluation?.toString?.() ?? "";
-
-        output = typeof rendered === "string" ? rendered : String(rendered);
-
-        const passed =
-          evaluation === true ||
-          output === "True" ||
-          output === "SUCCESS" ||
-          output === "None";
-
-        status = passed ? "passed" : "failed";
-      } catch (error: any) {
-        output = error?.message ?? String(error);
-        status = "failed";
-      }
-
-      updated.push({
-        ...result,
-        status,
-        output,
-      });
-    }
-
-    results.value = updated;
   } catch (error: any) {
-    runtimeMessage.value =
+    const message =
+      error?.data?.message ??
       error?.message ??
       "Something went wrong while running the exercise. Please try again.";
+    runtimeMessage.value = message;
   } finally {
     isRunning.value = false;
   }
