@@ -1505,7 +1505,7 @@ const onLogout = async () => {
     width: 100%;
     background: radial-gradient(
         circle at 20% -10%,
-        color-mix(in srgb, var(--foreground-color) 18%, transparent) 0%,
+        color-mix(in srgb, var(--color-palette-3, #9dff5c) 35%, transparent) 0%,
         transparent 60%
       ),
       color-mix(in srgb, var(--background-color) 96%, transparent);
@@ -1526,7 +1526,7 @@ const onLogout = async () => {
       height: 80%;
       background: radial-gradient(
         circle,
-        color-mix(in srgb, var(--foreground-color) 18%, transparent) 0%,
+        color-mix(in srgb, var(--color-palette-3, #9dff5c) 32%, transparent) 0%,
         transparent 60%
       );
       opacity: 0;
@@ -1537,8 +1537,8 @@ const onLogout = async () => {
     &:hover,
     &:focus-visible {
       transform: translate3d(0, -0.2rem, 0);
-      border-color: var(--foreground-color);
-      box-shadow: 0 24px 55px color-mix(in srgb, var(--foreground-color) 24%, transparent);
+      border-color: color-mix(in srgb, var(--color-palette-3, #9dff5c) 40%, var(--foreground-color));
+      box-shadow: 0 26px 60px color-mix(in srgb, var(--color-palette-3, #9dff5c) 28%, transparent);
 
       &:before {
         opacity: 0.6;
@@ -1547,8 +1547,8 @@ const onLogout = async () => {
   }
 
   &--is-active &__link {
-    border-color: var(--foreground-color);
-    box-shadow: 0 24px 55px color-mix(in srgb, var(--foreground-color) 28%, transparent);
+    border-color: color-mix(in srgb, var(--color-palette-3, #9dff5c) 40%, var(--foreground-color));
+    box-shadow: 0 28px 65px color-mix(in srgb, var(--color-palette-3, #9dff5c) 35%, transparent);
   }
 
   &__title {
