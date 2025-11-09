@@ -78,10 +78,31 @@ Check out the [deployment documentation](https://nuxt.com/docs/getting-started/d
 
 ## Environment variables
 
-The website uses environment variable to fetch data from Google sheets and Github, as well as for Analytics tracking with Umami.
-There's a `env.example` provided ready to be used.
+The website uses environment variables to fetch data from Google Sheets and Github, integrates Supabase, and enables analytics tracking with Umami.
+There's an `env.example` provided ready to be used.
 
-If the data cannot be fetched from Google sheets or Github, fake data are used.
+### Supabase
+
+Populate the following Supabase variables to enable API access:
+
+- `NUXT_SUPABASE_URL` – Supabase project URL (public).
+- `NUXT_SUPABASE_ANON_KEY` – Supabase anon key exposed to the client.
+- `SUPABASE_SERVICE_ROLE_KEY` – Service role key, only used server-side (never commit or ship to the client).
+- `SEED_SYSTEM_EMAIL` / `SEED_SYSTEM_NAME` – Optional overrides for the admin account the seed script provisions.
+
+Store the service role key in your local `.env` only; production hosting should inject it as a private environment variable.
+
+If the data cannot be fetched from Google Sheets or Github, fake data are used.
+
+### Supabase seeds
+
+After installing dependencies and configuring the environment variables above, run the automated seed to sync courses and UI copy into Supabase:
+
+```bash
+yarn seed:courses
+```
+
+The script provisions an admin system user (respecting `SEED_SYSTEM_EMAIL`/`SEED_SYSTEM_NAME`), upserts course metadata, module details, and uploads UI copy into dedicated tables. Re-running the seed is idempotent; it refreshes existing rows safely.﻿
 
 ## Project structure
 

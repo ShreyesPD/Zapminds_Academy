@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getModuleXp } from "~/utils/module-xp-values";
 import { agenticAiCourseContent } from "~/utils/agentic-ai-course-data";
 
 definePageMeta({
@@ -7,10 +8,22 @@ definePageMeta({
 });
 
 const { hero, modules, capstone } = agenticAiCourseContent;
+const { progress: courseProgressData } = useCourseProgress("agentic-ai");
+const courseProgressState = computed(() => courseProgressData.value);
+const staticModuleXpTotal = modules.reduce(
+  (sum, module) => sum + getModuleXp(module.difficulty),
+  0
+);
+
+const heroProgressPercent = computed(
+  () => courseProgressState.value?.completionPercent ?? hero.progressPercent
+);
+const courseEarnedXp = computed(() => courseProgressState.value?.earnedXp ?? 0);
+const courseTotalXp = computed(
+  () => courseProgressState.value?.totalXp ?? staticModuleXpTotal
+);
 const activeModuleId = ref(modules[0]?.id ?? "");
-const modulePanelId = `${agenticAiCourseContent.courseId}-module-panel`;
-const isModuleListOpen = ref(true);
-const moduleListInner = ref<HTMLElement | null>(null);
+// panel id handled internally by VModuleRail
 
 const activeModule = computed(() =>
   modules.find((module) => module.id === activeModuleId.value)
@@ -19,58 +32,6 @@ const activeModule = computed(() =>
 const onSelectModule = (moduleId: string) => {
   activeModuleId.value = moduleId;
 };
-
-const toggleModuleList = () => {
-  const panel = moduleListInner.value;
-  if (!panel) {
-    isModuleListOpen.value = !isModuleListOpen.value;
-    return;
-  }
-
-  const currentHeight = panel.scrollHeight;
-
-  if (isModuleListOpen.value) {
-    panel.style.height = `${currentHeight}px`;
-    panel.style.opacity = "1";
-    requestAnimationFrame(() => {
-      panel.style.height = "0px";
-      panel.style.opacity = "0";
-    });
-  } else {
-    panel.style.height = "0px";
-    panel.style.opacity = "0";
-    requestAnimationFrame(() => {
-      const target = panel.scrollHeight || currentHeight;
-      panel.style.height = `${target}px`;
-      panel.style.opacity = "1";
-    });
-  }
-
-  isModuleListOpen.value = !isModuleListOpen.value;
-};
-
-const onPanelTransitionEnd = (event: TransitionEvent) => {
-  if (event.propertyName !== "height") return;
-  const panel = moduleListInner.value;
-  if (!panel) return;
-  if (isModuleListOpen.value) {
-    panel.style.height = "auto";
-  }
-};
-
-onMounted(() => {
-  const panel = moduleListInner.value;
-  if (!panel) return;
-  panel.style.height = "auto";
-  panel.style.opacity = "1";
-  panel.addEventListener("transitionend", onPanelTransitionEnd);
-});
-
-onBeforeUnmount(() => {
-  const panel = moduleListInner.value;
-  if (!panel) return;
-  panel.removeEventListener("transitionend", onPanelTransitionEnd);
-});
 </script>
 
 <template>
@@ -85,73 +46,21 @@ onBeforeUnmount(() => {
           <div :class="$style.progress">
             <span>Course progress</span>
             <div>
-              <span :style="{ '--progress': hero.progressPercent / 100 }"></span>
+              <span :style="{ '--progress': heroProgressPercent / 100 }"></span>
             </div>
-            <strong>{{ hero.progressPercent }}%</strong>
+            <strong>{{ heroProgressPercent }}%</strong>
+            <p :class="$style['progress-xp']">
+              {{ courseEarnedXp }} / {{ courseTotalXp }} XP earned
+            </p>
           </div>
         </div>
 
-        <aside
-          :class="[
-            $style['module-list'],
-            !isModuleListOpen && $style['module-list--collapsed'],
-          ]"
-        >
-          <div :class="$style['module-list__header']">
-            <h2>Modules</h2>
-            <button
-              type="button"
-              :class="$style['module-list__toggle']"
-              :aria-expanded="isModuleListOpen"
-              :aria-controls="modulePanelId"
-              @click="toggleModuleList"
-            >
-              <span>{{ isModuleListOpen ? "Hide" : "Show" }}</span>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M4 9.5L8 5.5L12 9.5"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <div
-            ref="moduleListInner"
-            :id="modulePanelId"
-            :class="$style['module-list__panel']"
-            :aria-hidden="(!isModuleListOpen).toString()"
-          >
-            <ol role="list">
-              <li
-                v-for="(module, index) in modules"
-                :key="module.id"
-                :class="[
-                  $style['module-list__item'],
-                  module.id === activeModuleId && $style['module-list__item--is-active'],
-                ]"
-              >
-                <button type="button" @click="onSelectModule(module.id)">
-                  <span :class="$style['module-index']">{{ (index + 1).toString().padStart(2, '0') }}</span>
-                  <div>
-                    <span :class="$style['module-duration']">{{ module.duration }}</span>
-                    <strong>{{ module.title }}</strong>
-                    <span :class="$style['module-difficulty']">{{ module.difficulty }}</span>
-                  </div>
-                </button>
-              </li>
-            </ol>
-          </div>
-        </aside>
+        <VModuleRail
+          :modules="modules"
+          :active-id="activeModuleId"
+          :course-id="agenticAiCourseContent.courseId"
+          @select="onSelectModule"
+        />
       </div>
     </section>
 
@@ -212,7 +121,12 @@ onBeforeUnmount(() => {
             <p>{{ activeModule.exercise.prompt }}</p>
           </header>
 
-          <VCodePlayground :exercise="activeModule.exercise" />
+          <VCodePlayground
+            :exercise="activeModule.exercise"
+            :module-id="activeModule.id"
+            :module-difficulty="activeModule.difficulty"
+            :module-title="activeModule.title"
+          />
         </section>
       </div>
     </div>
@@ -327,10 +241,15 @@ onBeforeUnmount(() => {
     letter-spacing: 0.1em;
     font-size: 1rem;
   }
+
+  .progress-xp {
+    font-size: 0.9rem;
+    color: color-mix(in srgb, var(--foreground-color) 70%, transparent);
+  }
 }
 
 .module-list {
-  grid-column: 16 / 23;
+  grid-column: 14 / 24;
   background: color-mix(in srgb, var(--background-color) 90%, transparent);
   border-radius: 1.75rem;
   border: 1px solid color-mix(in srgb, var(--foreground-color) 12%, transparent);
@@ -394,9 +313,32 @@ onBeforeUnmount(() => {
     transition: height 0.35s ease, opacity 0.35s ease;
 
     &[aria-hidden="true"] {
-      height: 0 !important;
-      opacity: 0;
       pointer-events: none;
+    }
+  }
+
+  &__scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: clamp(20rem, 50vh, 32rem);
+    padding: 0 0.75rem 0 0.25rem;
+    margin: 0 -0.5rem 0 -0.25rem;
+    scrollbar-width: thin;
+    scrollbar-gutter: stable both-edges;
+    scrollbar-color: color-mix(in srgb, var(--foreground-color) 35%, transparent)
+      transparent;
+
+    &::-webkit-scrollbar {
+      width: 0.35rem;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--foreground-color) 35%, transparent);
+      border-radius: 999px;
     }
 
     ol {
@@ -418,6 +360,7 @@ onBeforeUnmount(() => {
 .module-list--collapsed .module-list__toggle svg {
   transform: rotate(0deg);
 }
+
 
 .module-list__item {
   button {

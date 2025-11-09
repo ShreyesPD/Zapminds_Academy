@@ -7,9 +7,16 @@ const runtimeConfig = {
   githubAccessToken: process.env.NUXT_GITHUB_GRAPHQL_TOKEN,
   umamiId: process.env.NUXT_UMAMI_ID,
   umamiHost: process.env.NUXT_UMAMI_HOST,
+  supabase: {
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  },
   public: {
     siteBaseUrl: process.env.NUXT_SITE_BASE_URL,
     siteDomain: process.env.NUXT_SITE_DOMAIN,
+    supabase: {
+      url: process.env.NUXT_SUPABASE_URL,
+      anonKey: process.env.NUXT_SUPABASE_ANON_KEY,
+    },
   },
 };
 

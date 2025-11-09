@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, nextTick, ref, shallowRef, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, nextTick, ref, shallowRef, watch } from "vue";
 import loader from "@monaco-editor/loader";
 import type { editor as MonacoEditorNS, IDisposable } from "monaco-editor";
 
@@ -15,6 +15,9 @@ type PlaygroundExercise = {
   hints: string[];
   tests: PlaygroundTest[];
   language?: string;
+  moduleIdentifier?: number | string;
+  difficulty?: string;
+  title?: string;
 };
 
 type PlaygroundResult = {
@@ -29,6 +32,13 @@ type PlaygroundResponse = {
 
 const props = defineProps<{
   exercise: PlaygroundExercise;
+  moduleId?: number | string;
+  moduleDifficulty?: string;
+  moduleTitle?: string;
+}>();
+
+const emit = defineEmits<{
+  (event: "all-tests-passed"): void;
 }>();
 
 const editorContainer = ref<HTMLDivElement | null>(null);
@@ -38,6 +48,9 @@ const monacoDisposables: IDisposable[] = [];
 const isEditorReady = ref(false);
 const isRunning = ref(false);
 const runtimeMessage = ref<string | null>(null);
+const xpAwarded = ref<number | null>(null);
+const tierBadgeAwarded = ref<any>(null);
+const awardMessage = ref<string | null>(null);
 const results = ref<
   Array<{
     test: PlaygroundTest;
@@ -45,6 +58,12 @@ const results = ref<
     output: string;
   }>
 >([]);
+
+const didAllPass = computed(
+  () => results.value.length > 0 && results.value.every((entry) => entry.status === "passed")
+);
+
+const hasResults = computed(() => results.value.length > 0);
 
 const ensureEditor = async () => {
   if (isEditorReady.value || !editorContainer.value) {
@@ -83,6 +102,9 @@ watch(
         monacoEditor.value.setValue(exercise.starterCode);
         results.value = [];
         runtimeMessage.value = null;
+        xpAwarded.value = null;
+        tierBadgeAwarded.value = null;
+        awardMessage.value = null;
       }
     });
   }
@@ -101,6 +123,9 @@ const runTests = async () => {
 
   isRunning.value = true;
   runtimeMessage.value = "Sending code to runner…";
+  xpAwarded.value = null;
+  tierBadgeAwarded.value = null;
+  awardMessage.value = null;
 
   try {
     const userCode = monacoEditor.value.getValue();
@@ -124,6 +149,11 @@ const runTests = async () => {
 
     results.value = mapped;
     runtimeMessage.value = null;
+
+    const passedAll = mapped.every((entry) => entry.status === "passed");
+    if (passedAll) {
+      await submitCompletion(userCode);
+    }
   } catch (error: any) {
     const message =
       error?.data?.message ??
@@ -140,6 +170,101 @@ const onResetCode = () => {
   monacoEditor.value.setValue(props.exercise.starterCode);
   results.value = [];
   runtimeMessage.value = null;
+  xpAwarded.value = null;
+  tierBadgeAwarded.value = null;
+  awardMessage.value = null;
+};
+
+watch(
+  didAllPass,
+  (isComplete, wasComplete) => {
+    if (isComplete && !wasComplete) {
+      emit("all-tests-passed");
+    }
+  }
+);
+
+const submitCompletion = async (userCode: string) => {
+  const moduleIdentifier = props.moduleId ?? props.exercise.moduleIdentifier;
+  if (!moduleIdentifier) {
+    return;
+  }
+
+  try {
+    // Get the Supabase client to retrieve the access token
+    const nuxtApp = useNuxtApp();
+    const supabase = nuxtApp.$supabase as any;
+    
+    if (!supabase) {
+      console.error("[playground] Supabase client not available");
+      return;
+    }
+
+    // Get the current session
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+
+    if (!accessToken) {
+      console.error("[playground] No access token available. Please log in.");
+      awardMessage.value = "Please log in to earn XP for completing modules.";
+      return;
+    }
+
+    const response = await $fetch<{
+      awarded: boolean;
+      xpAwarded: number;
+      xpResult: { newXp: number; newTier: { name: string } } | null;
+      tierBadge: any;
+    }>("/api/exercises/submit", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: {
+        moduleId: moduleIdentifier,
+        passed: true,
+        code: userCode,
+      },
+    });
+
+    if (response.awarded && response.xpAwarded) {
+      xpAwarded.value = response.xpAwarded;
+      awardMessage.value = `+${response.xpAwarded} XP earned for ${props.moduleTitle ?? "this module"}.`;
+      
+      // Invalidate all cached data so UI updates everywhere
+      // Get the current route to determine which course was completed
+      const route = useRoute();
+      const courseSlug = route.path.split('/courses/')[1]?.split('/')[0];
+      
+      if (courseSlug) {
+        // Clear the cached course progress data (for dashboard)
+        const { data: progressData } = useNuxtData(`course-progress:${courseSlug}`);
+        if (progressData.value) {
+          progressData.value = null;
+        }
+        
+        // Clear the cached course completions data (for module list UI)
+        const { data: completionsData } = useNuxtData(`course-completions:${courseSlug}`);
+        if (completionsData.value) {
+          completionsData.value = null;
+        }
+        
+        // Also invalidate user stats cache (for overall dashboard stats)
+        const { data: statsData } = useNuxtData('user-stats');
+        if (statsData.value) {
+          statsData.value = null;
+        }
+      }
+    } else {
+      awardMessage.value = "This module was already completed — XP preserved.";
+    }
+
+    if (response.tierBadge) {
+      tierBadgeAwarded.value = response.tierBadge;
+    }
+  } catch (error) {
+    console.error("[playground] Failed to award XP", error);
+  }
 };
 </script>
 
@@ -171,8 +296,20 @@ const onResetCode = () => {
         <h4>Test run</h4>
 
         <p v-if="runtimeMessage" :class="$style.status">{{ runtimeMessage }}</p>
+        <p
+          v-else-if="didAllPass"
+          :class="[$style.status, $style['status--success']]"
+        >
+          All tests passed. Nicely done.
+        </p>
+        <p
+          v-else-if="hasResults"
+          :class="[$style.status, $style['status--warning']]"
+        >
+          Keep iterating—at least one test is still failing.
+        </p>
 
-        <ul v-else>
+        <ul v-if="!runtimeMessage && hasResults">
           <li
             v-for="result in results"
             :key="result.test.id"
@@ -180,6 +317,9 @@ const onResetCode = () => {
           >
             <div>
               <strong>{{ result.test.description }}</strong>
+              <span :class="$style['results-item__badge']">
+                {{ result.status === "passed" ? "Passed" : "Failed" }}
+              </span>
               <span v-if="result.test.expected">
                 Expected: {{ result.test.expected }}
               </span>
@@ -188,9 +328,19 @@ const onResetCode = () => {
           </li>
         </ul>
 
-        <p v-if="!results.length && !runtimeMessage" :class="$style.placeholder">
+        <p v-if="!hasResults && !runtimeMessage" :class="$style.placeholder">
           Write your solution and run the tests to see results here.
         </p>
+
+        <transition name="fade">
+          <div v-if="awardMessage" :class="$style.award">
+            <strong>{{ awardMessage }}</strong>
+            <p v-if="tierBadgeAwarded">
+              Tier badge unlocked:
+              {{ tierBadgeAwarded.badge_name ?? tierBadgeAwarded.tier ?? tierBadgeAwarded.badge_key }}
+            </p>
+          </div>
+        </transition>
       </aside>
     </div>
   </div>
@@ -323,10 +473,51 @@ const onResetCode = () => {
   opacity: 0.75;
 }
 
+.status--success {
+  color: #3fe38d;
+  opacity: 1;
+}
+
+.status--warning {
+  color: #ffb347;
+  opacity: 1;
+}
+
 .placeholder {
   margin: 0;
   font-size: 0.85rem;
   opacity: 0.7;
+}
+
+.award {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border-radius: 14px;
+  background: rgba(79, 138, 255, 0.12);
+  border: 1px solid rgba(79, 138, 255, 0.25);
+  color: #dce8ff;
+  display: grid;
+  gap: 0.35rem;
+
+  strong {
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: rgba(220, 232, 255, 0.75);
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .results-item {
@@ -356,11 +547,30 @@ const onResetCode = () => {
     font-size: 0.8rem;
   }
 
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.35rem;
+    margin-bottom: 0.35rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: color-mix(in srgb, var(--foreground-color) 12%, transparent);
+  }
+
   &--passed {
     border-color: color-mix(in srgb, #2ecc71 35%, transparent);
 
     code {
       background: color-mix(in srgb, #2ecc71 20%, transparent);
+    }
+
+    .results-item__badge {
+      background: color-mix(in srgb, #2ecc71 20%, transparent);
+      color: #0f5229;
     }
   }
 
@@ -369,6 +579,11 @@ const onResetCode = () => {
 
     code {
       background: color-mix(in srgb, #ff6b6b 20%, transparent);
+    }
+
+    .results-item__badge {
+      background: color-mix(in srgb, #ff6b6b 20%, transparent);
+      color: #7a1020;
     }
   }
 

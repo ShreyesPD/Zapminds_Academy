@@ -2,7 +2,7 @@
 
 @mixin grid {
   display: grid;
-  grid-template-columns: repeat(var(--grid-columns), 1fr);
+  grid-template-columns: repeat(var(--grid-columns, 24), minmax(0, 1fr));
   grid-gap: var(--gutter-size);
 }
 
@@ -245,6 +245,65 @@
 @mixin bottom-separator {
   @include separator;
   bottom: calc(var(--height-space) * -1);
+}
+
+// XP TIER GRADIENTS
+
+// Tier gradient background mixin
+// Usage: @include tier-gradient(bronze);
+@mixin tier-gradient($tier-name) {
+  @if map-has-key($tier-colors, $tier-name) {
+    $tier-color: map-get($tier-colors, $tier-name);
+    background: linear-gradient(
+      135deg,
+      $tier-color 0%,
+      color-mix(in srgb, $tier-color 70%, black) 100%
+    );
+  } @else {
+    @warn "Unknown tier: #{$tier-name}. Available tiers: #{map-keys($tier-colors)}";
+  }
+}
+
+// Tier glow effect mixin
+// Usage: @include tier-glow(gold, 0.5);
+@mixin tier-glow($tier-name, $opacity: 0.3) {
+  @if map-has-key($tier-colors, $tier-name) {
+    $tier-color: map-get($tier-colors, $tier-name);
+    box-shadow: 0 0 20px rgba($tier-color, $opacity),
+      0 0 40px rgba($tier-color, $opacity * 0.5);
+  } @else {
+    @warn "Unknown tier: #{$tier-name}. Available tiers: #{map-keys($tier-colors)}";
+  }
+}
+
+// Tier border mixin
+// Usage: @include tier-border(platinum, 2px);
+@mixin tier-border($tier-name, $width: 2px) {
+  @if map-has-key($tier-colors, $tier-name) {
+    $tier-color: map-get($tier-colors, $tier-name);
+    border: $width solid $tier-color;
+  } @else {
+    @warn "Unknown tier: #{$tier-name}. Available tiers: #{map-keys($tier-colors)}";
+  }
+}
+
+// Tier text gradient mixin
+// Usage: @include tier-text-gradient(diamond);
+@mixin tier-text-gradient($tier-name) {
+  @if map-has-key($tier-colors, $tier-name) {
+    $tier-color: map-get($tier-colors, $tier-name);
+    background: linear-gradient(
+      90deg,
+      $tier-color 0%,
+      color-mix(in srgb, $tier-color 120%, white) 50%,
+      $tier-color 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  } @else {
+    @warn "Unknown tier: #{$tier-name}. Available tiers: #{map-keys($tier-colors)}";
+  }
 }
 
 // A11Y

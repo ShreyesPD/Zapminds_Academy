@@ -3,6 +3,7 @@ import type {
   ColorPaletteGenerator,
 } from "@martinlaxenaire/color-palette-generator";
 import type { GPUCurtains } from "gpu-curtains";
+import type { DebugPane } from "~/scenes/DebugPane";
 
 declare module "#app" {
   interface NuxtApp {

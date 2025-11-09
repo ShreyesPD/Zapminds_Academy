@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useStudentAuth } from "~/composables/use-auth";
+import { getTierByName } from "~/utils/xp-tiers";
+
 const pageTitle = "Leaderboard – Zapminds Academy";
 
 useSeoMeta({
@@ -22,111 +25,94 @@ type LeaderboardPlayer = {
   weeklyModules: number;
   badges: string[];
   trend: "up" | "down" | "steady";
+  tier?: string;
+  tier_icon?: string;
+  rank?: number;
 };
 
-const players: LeaderboardPlayer[] = [
-  {
-    id: "ananya",
-    name: "Ananya Sharma",
-    handle: "@ananya.codes",
-    avatar: "AS",
-    xp: 2410,
-    weeklyXp: 420,
-    streak: 14,
-    projects: 12,
-    weeklyProjects: 2,
-    modules: 58,
-    moduleTarget: 60,
-    weeklyModules: 8,
-    badges: ["Streak Saver", "Project Ace", "Capstone Champ"],
-    trend: "up",
-  },
-  {
-    id: "rohan",
-    name: "Rohan Kapoor",
-    handle: "@rohanxlabs",
-    avatar: "RK",
-    xp: 2125,
-    weeklyXp: 315,
-    streak: 9,
-    projects: 10,
-    weeklyProjects: 1,
-    modules: 51,
-    moduleTarget: 58,
-    weeklyModules: 6,
-    badges: ["Rapid Learner", "Ops Specialist"],
-    trend: "steady",
-  },
-  {
-    id: "neha",
-    name: "Neha Patel",
-    handle: "@neha.ai",
-    avatar: "NP",
-    xp: 1960,
-    weeklyXp: 360,
-    streak: 11,
-    projects: 9,
-    weeklyProjects: 2,
-    modules: 48,
-    moduleTarget: 55,
-    weeklyModules: 7,
-    badges: ["Insight Architect", "Zap Labs Builder"],
-    trend: "up",
-  },
-  {
-    id: "arjun",
-    name: "Arjun Malhotra",
-    handle: "@arjun.ops",
-    avatar: "AM",
-    xp: 1875,
-    weeklyXp: 240,
-    streak: 7,
-    projects: 8,
-    weeklyProjects: 1,
-    modules: 43,
-    moduleTarget: 54,
-    weeklyModules: 5,
-    badges: ["Automation Ninja"],
-    trend: "down",
-  },
-  {
-    id: "sara",
-    name: "Sara Varma",
-    handle: "@sarastudios",
-    avatar: "SV",
-    xp: 1790,
-    weeklyXp: 195,
-    streak: 6,
-    projects: 7,
-    weeklyProjects: 1,
-    modules: 40,
-    moduleTarget: 52,
-    weeklyModules: 4,
-    badges: ["Design Whisperer"],
-    trend: "steady",
-  },
-  {
-    id: "navin",
-    name: "Navin R.",
-    handle: "@nav.dev",
-    avatar: "NR",
-    xp: 1720,
-    weeklyXp: 210,
-    streak: 4,
-    projects: 6,
-    weeklyProjects: 1,
-    modules: 37,
-    moduleTarget: 50,
-    weeklyModules: 5,
-    badges: ["Prompt Pro"],
-    trend: "up",
-  },
-];
+interface LeaderboardEntry {
+  rank: number;
+  user_id: string;
+  display_name: string;
+  xp_total: number;
+  tier: string;
+  tier_icon: string;
+  is_current_user?: boolean;
+  avatar_url?: string;
+}
+
+interface LeaderboardResponse {
+  season: {
+    id: number;
+    name: string;
+    starts_at: string;
+    ends_at: string | null;
+  } | null;
+  entries: LeaderboardEntry[];
+  userEntry: LeaderboardEntry | null;
+}
+
+const { profile } = useStudentAuth();
+const players = ref<LeaderboardPlayer[]>([]);
+const isLoading = ref(true);
+const error = ref<string | null>(null);
+
+// Fetch leaderboard data from API
+const fetchLeaderboard = async () => {
+  isLoading.value = true;
+  error.value = null;
+  
+  try {
+    const response = await $fetch<LeaderboardResponse>("/api/leaderboard/current", {
+      method: "GET",
+    });
+
+    // Map API data to UI format
+    players.value = response.entries.map((entry) => {
+      const initials = entry.display_name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+
+      return {
+        id: entry.user_id,
+        name: entry.display_name,
+        handle: `@${entry.display_name.toLowerCase().replace(/\s+/g, ".")}`,
+        avatar: initials,
+        xp: entry.xp_total,
+        weeklyXp: Math.floor(entry.xp_total * 0.15), // Estimate weekly as 15% of total
+        streak: 0, // TODO: Add streak data to API
+        projects: 0, // TODO: Add project count to API
+        weeklyProjects: 0, // TODO: Add weekly projects to API
+        modules: 0, // TODO: Add module count to API
+        moduleTarget: 60,
+        weeklyModules: 0, // TODO: Add weekly modules to API
+        badges: [], // TODO: Fetch badges from API
+        trend: "steady" as const,
+        tier: entry.tier,
+        tier_icon: entry.tier_icon,
+        rank: entry.rank,
+      };
+    });
+  } catch (e: any) {
+    error.value = e.data?.message || e.message || "Failed to load leaderboard.";
+    console.error("Error fetching leaderboard:", e);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// Fetch on mount
+onMounted(() => {
+  fetchLeaderboard();
+});
 
 const leaderboardMode = ref<"overall" | "weekly">("overall");
 
 const sortedPlayers = computed(() => {
-  const list = [...players];
+  const list = [...players.value];
   if (leaderboardMode.value === "weekly") {
     return list.sort((a, b) => b.weeklyXp - a.weeklyXp);
   }
@@ -136,10 +122,17 @@ const sortedPlayers = computed(() => {
 
 const topThree = computed(() => sortedPlayers.value.slice(0, 3));
 const contenders = computed(() => sortedPlayers.value.slice(3));
-const yourHandle = "@ananya.codes";
-const currentPlayer = computed(() =>
-  sortedPlayers.value.find((player) => player.handle === yourHandle)
-);
+
+const currentPlayer = computed(() => {
+  // If logged in, show the authenticated user's card
+  if (profile.value?.user_id) {
+    const userPlayer = sortedPlayers.value.find((player) => player.id === profile.value?.user_id);
+    if (userPlayer) return userPlayer;
+  }
+  
+  // Otherwise, show the #1 ranked player as a demo
+  return sortedPlayers.value[0] || null;
+});
 
 const xpTarget = 2600;
 const xpCompletion = computed(() => {
@@ -222,10 +215,27 @@ const switchMode = (mode: "overall" | "weekly") => {
     <div :class="$style.backdrop"></div>
 
     <main class="container" :class="$style.content">
-      <section :class="$style.hero">
-        <div :class="$style['hero-copy']">
-          <span>{{ sortedPlayers.length }} contenders</span>
-          <h1>Leaderboard</h1>
+      <!-- Loading State -->
+      <div v-if="isLoading" :class="$style.loading">
+        <div :class="$style.spinner"></div>
+        <p>Loading leaderboard...</p>
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="error" :class="$style.errorState">
+        <h2>⚠️ Unable to Load Leaderboard</h2>
+        <p>{{ error }}</p>
+        <button type="button" :class="$style['hero-button']" @click="fetchLeaderboard">
+          Try Again
+        </button>
+      </div>
+
+      <!-- Main Content -->
+      <template v-else>
+        <section :class="$style.hero">
+          <div :class="$style['hero-copy']">
+            <span>{{ sortedPlayers.length }} contenders</span>
+            <h1>Leaderboard</h1>
           <p>
             Track the Zapminds momentum. Earn XP from shipped projects, streak bonuses,
             and community quests. Toggle views to see weekly pushes or overall dominance.
@@ -262,7 +272,7 @@ const switchMode = (mode: "overall" | "weekly") => {
 
         <div v-if="currentPlayer" :class="$style['player-card']">
           <header>
-            <span>You</span>
+            <span>{{ profile?.user_id === currentPlayer.id ? 'You' : '#1 Ranked' }}</span>
             <strong>{{ currentPlayer.name }}</strong>
             <small>{{ currentPlayer.handle }}</small>
           </header>
@@ -404,6 +414,7 @@ const switchMode = (mode: "overall" | "weekly") => {
           </li>
         </ul>
       </section>
+      </template>
     </main>
   </div>
 </template>
@@ -475,62 +486,93 @@ const switchMode = (mode: "overall" | "weekly") => {
   }
 }
 
+// TODO: Unify this segmented control with a reusable toggle once the design system tokens solidify.
 .mode-toggle {
+  --toggle-height: clamp(1.75rem, 3.5vw, 2.2rem);
+  --toggle-padding: 0.35rem;
   position: relative;
   display: inline-flex;
   align-items: stretch;
-  padding: 0.25rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--foreground-color) 20%, transparent);
-  backdrop-filter: blur(12px);
-  background: color-mix(in srgb, var(--background-color) 70%, transparent);
+  padding: var(--toggle-padding);
+  border-radius: calc(var(--toggle-height) + (var(--toggle-padding) * 2));
+  border: 1px solid color-mix(in srgb, var(--foreground-color) 45%, transparent);
+  background: radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.14), transparent 60%),
+    linear-gradient(120deg, rgba(35, 35, 35, 0.95), rgba(5, 5, 5, 0.82));
+  box-shadow:
+    inset 0 1px 16px rgba(255, 255, 255, 0.08),
+    0 20px 55px rgba(0, 0, 0, 0.4);
   overflow: hidden;
+  width: fit-content;
+  min-width: 0;
+  isolation: isolate;
 
   &__button {
     position: relative;
     z-index: 1;
-    padding: 0.55rem 1.1rem;
-    border-radius: 999px;
+    padding: 0 calc(var(--toggle-height) * 0.85);
     border: none;
+    border-radius: 999px;
     background: transparent;
     font-family: var(--display-font);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: clamp(0.58rem, 1vw, 0.78rem);
+    font-weight: 650;
     color: color-mix(in srgb, var(--foreground-color) 70%, transparent);
     cursor: pointer;
-    transition: color 0.25s ease;
+    transition: color 0.25s ease, text-shadow 0.25s ease;
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     outline: none;
+    min-width: clamp(4.4rem, 14vw, 6rem);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--foreground-color) 65%, transparent);
+      border-radius: calc(999px - 2px);
+    }
 
     &--active {
-      color: var(--foreground-color);
+      color: color-mix(in srgb, var(--background-color) 95%, white 5%);
+      text-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
     }
   }
 
   &__glow {
     position: absolute;
-    top: 4px;
-    left: 4px;
-    height: calc(100% - 8px);
-    width: calc(50% - 8px);
+    top: var(--toggle-padding);
+    left: var(--toggle-padding);
+    height: calc(100% - (var(--toggle-padding) * 2));
+    width: calc((100% - (var(--toggle-padding) * 2)) / 2);
     border-radius: 999px;
     background: linear-gradient(
-      120deg,
-      color-mix(in srgb, var(--accent-color, #ffd454) 22%, transparent) 0%,
-      color-mix(in srgb, var(--foreground-color) 20%, transparent) 100%
-    );
-    transition: transform 0.3s ease;
+        135deg,
+        color-mix(in srgb, var(--accent-color, #ffd454) 75%, white 10%),
+        color-mix(in srgb, var(--foreground-color) 45%, transparent)
+      ),
+      radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.45), transparent 70%);
+    box-shadow:
+      inset 0 3px 24px rgba(255, 255, 255, 0.45),
+      0 24px 55px rgba(0, 0, 0, 0.5);
+    filter: saturate(1.15) brightness(1.08);
+    transition: transform 0.35s cubic-bezier(0.33, 1, 0.68, 1);
+    z-index: 0;
 
     &[data-mode="overall"] {
       transform: translateX(0);
     }
 
     &[data-mode="weekly"] {
-      transform: translateX(calc(100% + 8px));
+      transform: translateX(100%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__glow,
+    &__button {
+      transition: none;
     }
   }
 }
@@ -542,18 +584,22 @@ const switchMode = (mode: "overall" | "weekly") => {
 }
 
 .hero-button {
+  // TODO: Pull these tokens into a shared button component once design system work starts.
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.85rem 1.45rem;
+  gap: 0.5rem;
+  padding: clamp(0.55rem, 1.2vw, 0.75rem) clamp(1rem, 2.4vw, 1.25rem);
   border-radius: 999px;
   background: var(--foreground-color);
   color: var(--background-color);
   font-family: var(--display-font);
-  letter-spacing: 0.12em;
+  font-size: clamp(0.68rem, 1.2vw, 0.85rem);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: fit-content;
+  align-self: flex-start;
 
   &:hover,
   &:focus-visible {
@@ -1025,6 +1071,46 @@ const switchMode = (mode: "overall" | "weekly") => {
   50% {
     opacity: 0.35;
     transform: scale(1.1);
+  }
+}
+
+.loading,
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  min-height: 60vh;
+  text-align: center;
+  padding: 3rem 1rem;
+
+  h2 {
+    font-family: var(--display-font);
+    font-size: 1.8rem;
+    margin: 0;
+  }
+
+  p {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    max-width: 50ch;
+    margin: 0;
+  }
+}
+
+.spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid color-mix(in srgb, var(--foreground-color) 20%, transparent);
+  border-top-color: var(--foreground-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

@@ -6,14 +6,34 @@ definePageMeta({
   middleware: ["student-auth"],
 });
 
-const { profile, logout } = useStudentAuth();
+const { profile, signOut } = useStudentAuth();
+const {
+  xpSummary,
+  streakSummary,
+  submissionsToday,
+  reviewQueueCount,
+} = useUserProgress();
+
 const router = useRouter();
 
 const studentName = computed(() => profile.value.name ?? "Zapmind Student");
-const streakDays = 5;
-const totalXp = 1825;
-const solvedToday = 3;
-const reviewQueue = 4;
+const streakDays = computed(() => streakSummary.value.current ?? 0);
+const streakRewardEstimate = computed(() => 120 + (streakDays.value ?? 0) * 8);
+const totalXp = computed(() => xpSummary.value.total ?? 0);
+const solvedToday = computed(() => submissionsToday.value ?? 0);
+const reviewQueue = computed(() => reviewQueueCount.value ?? 0);
+const tierLabel = computed(() => xpSummary.value.tierLabel);
+const tierName = computed(() => xpSummary.value.tier);
+const xpProgressPercent = computed(() => Math.round((xpSummary.value.percentToNextTier ?? 0) * 100));
+const xpProgressRatio = computed(() => xpSummary.value.percentToNextTier ?? 0);
+const xpToNextTier = computed(() => xpSummary.value.xpToNextTier ?? 0);
+const nextTierName = computed(() => xpSummary.value.nextTier ?? xpSummary.value.tier);
+const tierProgressNote = computed(() => {
+  if (!xpSummary.value.nextTier) {
+    return "You're at the top tier!";
+  }
+  return `${xpToNextTier.value} XP to ${nextTierName.value}`;
+});
 const weeklyGoal = {
   completed: 7,
   total: 12,
@@ -62,6 +82,8 @@ interface Course {
   progress: number;
   completedModules: number;
   totalModules: number;
+  earnedXp: number;
+  totalXpValue: number;
   nextTopic: string;
   eta: string;
   topics: CourseTopic[];
@@ -78,6 +100,8 @@ const courses = reactive<Course[]>([
     progress: 72,
     completedModules: 18,
     totalModules: 25,
+    earnedXp: 0,
+    totalXpValue: 0,
     nextTopic: "Working with Async IO",
     eta: "10 min",
     topics: [
@@ -187,6 +211,8 @@ def export(records: Iterable[dict], format_record: Formatter) -> list[str]:
     progress: 20,
     completedModules: 2,
     totalModules: 10,
+    earnedXp: 0,
+    totalXpValue: 0,
     nextTopic: "Feature Engineering for Production",
     eta: "20 min",
     topics: [
@@ -300,6 +326,8 @@ train:
     progress: 44,
     completedModules: 4,
     totalModules: 10,
+    earnedXp: 0,
+    totalXpValue: 0,
     nextTopic: "Scaled Dot-Product Attention",
     eta: "23 min",
     topics: [
@@ -398,6 +426,8 @@ def denoise_step(x_t, beta, noise):
     progress: 62,
     completedModules: 6,
     totalModules: 10,
+    earnedXp: 0,
+    totalXpValue: 0,
     nextTopic: "Guardrail Policies & Moderation",
     eta: "14 min",
     topics: [
@@ -493,6 +523,8 @@ def denoise_step(x_t, beta, noise):
     progress: 51,
     completedModules: 5,
     totalModules: 10,
+    earnedXp: 0,
+    totalXpValue: 0,
     nextTopic: "Hybrid Ranking & Signals",
     eta: "18 min",
     topics: [
@@ -584,6 +616,8 @@ def denoise_step(x_t, beta, noise):
     progress: 47,
     completedModules: 3,
     totalModules: 10,
+    earnedXp: 0,
+    totalXpValue: 0,
     nextTopic: "Resource URI Scoping",
     eta: "16 min",
     topics: [
@@ -672,6 +706,8 @@ def denoise_step(x_t, beta, noise):
     progress: 39,
     completedModules: 3,
     totalModules: 10,
+    earnedXp: 0,
+    totalXpValue: 0,
     nextTopic: "Adaptive Goal Re-planning",
     eta: "21 min",
     topics: [
@@ -754,6 +790,42 @@ def denoise_step(x_t, beta, noise):
     ],
   },
 ]);
+
+const courseProgressLookup = courses.reduce<Record<string, ReturnType<typeof useCourseProgress>>>(
+  (acc, course) => {
+    acc[course.id] = useCourseProgress(course.id);
+    return acc;
+  },
+  {}
+);
+
+courses.forEach((course) => {
+  const loader = courseProgressLookup[course.id];
+  watch(
+    () => loader.progress.value,
+    (progress) => {
+      if (!progress) {
+        course.progress = 0;
+        course.completedModules = 0;
+        course.earnedXp = 0;
+        course.totalXpValue = 0;
+        return;
+      }
+
+      course.progress = progress.completionPercent ?? course.progress;
+      course.completedModules = progress.completedModules ?? course.completedModules;
+      course.totalModules = progress.totalModules ?? course.totalModules;
+      course.earnedXp = progress.earnedXp ?? course.earnedXp ?? 0;
+      course.totalXpValue = progress.totalXp ?? course.totalXpValue ?? 0;
+
+      if (progress.nextModuleTitle) {
+        course.nextTopic = progress.nextModuleTitle;
+      }
+    },
+    { immediate: true }
+  );
+});
+
 const selectedCourseId = ref(courses[0]?.id ?? "");
 
 const selectedCourse = computed(() =>
@@ -795,8 +867,12 @@ const topicStatusLabel = (status: TopicStatus) => {
 };
 
 const onLogout = async () => {
-  logout();
-  await router.push("/login");
+  try {
+    await signOut();
+    await router.push("/login");
+  } catch (error) {
+    console.error("[dashboard] Failed to sign out", error);
+  }
 };
 </script>
 
@@ -827,7 +903,7 @@ const onLogout = async () => {
             <span :class="$style['hero-stats__value']">
               {{ UIElements.dashboard.xpLabel(totalXp) }}
             </span>
-            <small>Next tier at {{ totalXp + 380 }} XP</small>
+            <small>{{ tierLabel }}</small>
           </div>
           <div>
             <span :class="$style['hero-stats__label']">Solved today</span>
@@ -858,23 +934,21 @@ const onLogout = async () => {
 
       <div :class="$style['insight-card']">
         <div>
-          <span :class="$style['insight-card__label']">
-            {{ UIElements.dashboard.insights.weeklyGoal }}
-          </span>
+          <span :class="$style['insight-card__label']">Tier Progress</span>
           <strong :class="$style['insight-card__value']">
-            {{ weeklyGoalPercent }}%
+            {{ xpProgressPercent }}%
           </strong>
           <p :class="$style['insight-card__note']">
-            {{ weeklyGoal.completed }} / {{ weeklyGoal.total }} modules
+            {{ tierProgressNote }}
           </p>
           <span
             :class="$style['progress-ring']"
             role="progressbar"
-            :aria-valuenow="weeklyGoalPercent"
+            :aria-valuenow="xpProgressPercent"
             aria-valuemin="0"
             aria-valuemax="100"
           >
-            <span :style="{ '--progress': weeklyGoalPercent / 100 }"></span>
+            <span :style="{ '--progress': xpProgressRatio }"></span>
           </span>
         </div>
 
@@ -896,6 +970,25 @@ const onLogout = async () => {
 
         <NuxtLink to="/leaderboard" :class="$style['insight-card__cta']">
           View Leaderboard
+          <svg width="20" height="12" viewBox="0 0 20 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M13.5 1L18 6L13.5 11"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path d="M2 6H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+        </NuxtLink>
+        <NuxtLink
+          to="/daily-streak"
+          :class="[$style['insight-card__cta'], $style['insight-card__cta--streak']]"
+        >
+          <div>
+            <span>Daily Streak Quest</span>
+            <small>Claim +{{ streakRewardEstimate }} XP and keep day {{ streakDays + 1 }} alive</small>
+          </div>
           <svg width="20" height="12" viewBox="0 0 20 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M13.5 1L18 6L13.5 11"
@@ -948,7 +1041,7 @@ const onLogout = async () => {
                   <strong>
                     {{ UIElements.dashboard.courseProgressLabel(course.completedModules, course.totalModules) }}
                   </strong>
-                  <span>{{ UIElements.dashboard.xpLabel(course.progress * 10) }}</span>
+                  <span>{{ course.earnedXp }} / {{ course.totalXpValue }} XP</span>
                 </div>
                 <div :class="$style['course-card__progress-track']">
                   <span :style="{ '--progress': course.progress / 100 }"></span>
@@ -1277,7 +1370,7 @@ const onLogout = async () => {
 }
 
 .insight-card {
-  grid-column: 16 / 23;
+  grid-column: 15 / 23;
   display: grid;
   gap: 1.5rem;
   background: color-mix(in srgb, var(--background-color) 92%, transparent);
@@ -1349,6 +1442,43 @@ const onLogout = async () => {
       svg {
         transform: translateX(4px);
       }
+    }
+  }
+
+  &__cta--streak {
+    width: 90%;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.9rem;
+    margin-top: 0.5rem;
+    padding: 0.85rem 1.35rem;
+    border: 0;
+    background: linear-gradient(120deg, #89d652, #ffd454);
+    color: #080808;
+    box-shadow: 0 22px 48px color-mix(in srgb, #ff4d8c 30%, transparent);
+
+    div {
+      display: grid;
+      gap: 0.15rem;
+    }
+
+    div span {
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    small {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.85;
+    }
+
+    svg {
+      padding: 0.35rem;
+      border-radius: 50%;
+      background: color-mix(in srgb, #000 8%, transparent);
     }
   }
 }

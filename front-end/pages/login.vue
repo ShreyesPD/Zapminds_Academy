@@ -13,6 +13,8 @@ useSeoMeta({
   description: UIElements.auth.subtitle,
 });
 
+type AuthProvider = "google" | "github" | "microsoft";
+
 const credentials = reactive({
   email: "",
   password: "",
@@ -50,24 +52,63 @@ const highlights = [
 ];
 
 const router = useRouter();
-const { login } = useStudentAuth();
+const auth = process.client ? useStudentAuth() : null;
 
-const navigateToDashboard = async (email: string) => {
-  login({ email });
-  credentials.password = "";
-  await router.push("/dashboard");
-};
+const formError = ref<string | null>(null);
+const isSubmitting = ref(false);
 
 const onSubmit = async (event: Event) => {
   event.preventDefault();
-  await navigateToDashboard(credentials.email);
+  if (isSubmitting.value) {
+    return;
+  }
+
+  if (!auth) {
+    formError.value = "Authentication is not available. Please refresh the page.";
+    return;
+  }
+
+  formError.value = null;
+  isSubmitting.value = true;
+
+  try {
+    await auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password,
+      remember: credentials.remember,
+    });
+    credentials.password = "";
+    await router.push("/dashboard");
+  } catch (error) {
+    formError.value =
+      error instanceof Error ? error.message : "Unable to sign in.";
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 
-const onProviderLogin = async (providerId: string) => {
-  const fallbackEmail =
-    credentials.email || `${providerId}@zapminds.academy`;
+const onProviderLogin = async (providerId: AuthProvider) => {
+  if (isSubmitting.value) {
+    return;
+  }
 
-  await navigateToDashboard(fallbackEmail);
+  if (!auth) {
+    formError.value = "Authentication is not available. Please refresh the page.";
+    return;
+  }
+
+  formError.value = null;
+  isSubmitting.value = true;
+
+  try {
+    await auth.signInWithProvider(providerId);
+  } catch (error) {
+    formError.value =
+      error instanceof Error ? error.message : "Unable to continue with SSO.";
+  } finally {
+    // Provider SSO triggers redirect, but if it fails we release the lock.
+    isSubmitting.value = false;
+  }
 };
 </script>
 
@@ -94,7 +135,11 @@ const onProviderLogin = async (providerId: string) => {
       </aside>
 
       <div :class="$style.form">
-        <form :class="$style['form-card']" @submit="onSubmit">
+        <form :class="$style['form-card']" @submit="onSubmit" novalidate>
+          <p v-if="formError" :class="$style.error" role="alert">
+            {{ formError }}
+          </p>
+
           <fieldset :class="$style['field-group']">
             <label :class="$style.label" for="email">{{ UIElements.auth.emailLabel }}</label>
             <input
@@ -134,7 +179,12 @@ const onProviderLogin = async (providerId: string) => {
             </NuxtLink>
           </div>
 
-          <button type="submit" :class="$style.submit">
+          <button
+            type="submit"
+            :class="$style.submit"
+            :disabled="isSubmitting"
+            :aria-busy="isSubmitting"
+          >
             {{ UIElements.auth.primaryCta }}
           </button>
 
@@ -146,7 +196,11 @@ const onProviderLogin = async (providerId: string) => {
 
           <ul :class="$style.providers">
             <li v-for="provider in ssoProviders" :key="provider.id">
-              <button type="button" @click="onProviderLogin(provider.id)">
+              <button
+                type="button"
+                @click="onProviderLogin(provider.id as AuthProvider)"
+                :disabled="isSubmitting"
+              >
                 {{ provider.label }}
               </button>
             </li>
@@ -295,6 +349,16 @@ const onProviderLogin = async (providerId: string) => {
   }
 }
 
+.error {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--foreground-color) 22%, transparent);
+  background: color-mix(in srgb, var(--foreground-color) 12%, transparent);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
 .field-group {
   display: flex;
   flex-direction: column;
@@ -390,6 +454,13 @@ const onProviderLogin = async (providerId: string) => {
   &:focus-visible {
     transform: translate3d(0, -0.2rem, 0);
     box-shadow: 0 18px 40px color-mix(in srgb, var(--foreground-color) 25%, transparent);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+    transform: none;
+    box-shadow: none;
   }
 }
 
