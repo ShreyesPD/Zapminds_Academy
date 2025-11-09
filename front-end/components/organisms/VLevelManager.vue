@@ -24,9 +24,11 @@ const toggleLegend = () => {
     hasInteracted = true;
     addFeaturePoints(1);
 
-    umTrackEvent("UI", {
-      name: "Opened level manager legend",
-    });
+    if (typeof umTrackEvent === "function") {
+      umTrackEvent("UI", {
+        name: "Opened level manager legend",
+      });
+    }
   }
 };
 
@@ -58,9 +60,11 @@ onMounted(() => {
     currentFeaturePoints.value =
       features.value[features.value.length - 1].pointsNeeded;
 
-    umTrackEvent("Feature", {
-      name: "Reduced motion",
-    });
+    if (typeof umTrackEvent === "function") {
+      umTrackEvent("Feature", {
+        name: "Reduced motion",
+      });
+    }
   }
 });
 
@@ -99,11 +103,13 @@ watch(currentLevel, () => {
   if (!isGameActive.value) return;
 
   if (import.meta.client) {
-    umTrackEvent("Game", {
-      name: `Unlocked level ${currentLevel.value} (${
-        levels.value[currentLevel.value - 1].contentUnlocked
-      })`,
-    });
+    if (typeof umTrackEvent === "function") {
+      umTrackEvent("Game", {
+        name: `Unlocked level ${currentLevel.value} (${
+          levels.value[currentLevel.value - 1].contentUnlocked
+        })`,
+      });
+    }
   }
 
   if (
@@ -144,11 +150,13 @@ watch(currentFeature, () => {
   if (!isGameActive.value) return;
 
   if (import.meta.client) {
-    umTrackEvent("Game", {
-      name: `Unlocked feature ${currentFeature.value} (${
-        features.value[currentFeature.value - 1].contentUnlocked
-      })`,
-    });
+    if (typeof umTrackEvent === "function") {
+      umTrackEvent("Game", {
+        name: `Unlocked feature ${currentFeature.value} (${
+          features.value[currentFeature.value - 1].contentUnlocked
+        })`,
+      });
+    }
   }
 
   if (

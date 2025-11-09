@@ -15,9 +15,11 @@ const toggleLegend = () => {
     hasInteracted = true;
     addFeaturePoints(2);
 
-    umTrackEvent("UI", {
-      name: `Opened ${props.label} legend`,
-    });
+    if (typeof umTrackEvent === "function") {
+      umTrackEvent("UI", {
+        name: `Opened ${props.label} legend`,
+      });
+    }
   }
 };
 

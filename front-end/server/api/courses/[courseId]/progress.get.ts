@@ -53,7 +53,34 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: `Failed to load modules: ${modulesError.message}` });
   }
 
-  const moduleIds = (modules ?? []).map((module) => module.id);
+  const normalizedModules: typeof modules = [];
+  const seenOrderIndexes = new Map<number, (typeof modules)[number]>();
+  const duplicateOrderIndexes: number[] = [];
+
+  for (const module of modules ?? []) {
+    if (module.order_index == null) {
+      normalizedModules.push(module);
+      continue;
+    }
+
+    if (seenOrderIndexes.has(module.order_index)) {
+      duplicateOrderIndexes.push(module.order_index);
+      continue;
+    }
+
+    seenOrderIndexes.set(module.order_index, module);
+    normalizedModules.push(module);
+  }
+
+  if (duplicateOrderIndexes.length > 0) {
+    throw createError({
+      statusCode: 500,
+      statusMessage:
+        "Database inconsistency detected: duplicate module order indexes found. Please run the cleanup script.",
+    });
+  }
+
+  const moduleIds = normalizedModules.map((module) => module.id);
 
   const completionsQuery = moduleIds.length
     ? await supabase
@@ -71,10 +98,25 @@ export default defineEventHandler(async (event) => {
   }
 
   const completionsByModule = new Map<number, { awarded_xp: number; completed_at: string | null }>();
+  const duplicateCompletionModules = new Set<number>();
+
   for (const completion of completionsQuery.data ?? []) {
+    if (completionsByModule.has(completion.module_id)) {
+      duplicateCompletionModules.add(completion.module_id);
+      continue;
+    }
+
     completionsByModule.set(completion.module_id, {
       awarded_xp: completion.awarded_xp ?? 0,
       completed_at: completion.completed_at ?? null,
+    });
+  }
+
+  if (duplicateCompletionModules.size > 0) {
+    throw createError({
+      statusCode: 500,
+      statusMessage:
+        "Database inconsistency detected: duplicate module completion records found. Please run the cleanup script.",
     });
   }
 
@@ -93,24 +135,39 @@ export default defineEventHandler(async (event) => {
   }
 
   const detailByModule = new Map<number, { external_id: string | null; difficulty: string | null }>();
+  const duplicateDetailModules = new Set<number>();
+
   for (const detail of details ?? []) {
+    if (detailByModule.has(detail.module_id)) {
+      duplicateDetailModules.add(detail.module_id);
+      continue;
+    }
+
     detailByModule.set(detail.module_id, {
       external_id: detail.external_id ?? null,
       difficulty: detail.difficulty ?? null,
     });
   }
 
-  const totalModules = modules?.length ?? 0;
-  const completedModules = modules?.filter((module) => completionsByModule.has(module.id)).length ?? 0;
-  const totalXp = modules?.reduce((acc, module) => acc + (module.xp_value ?? 0), 0) ?? 0;
-  const earnedXp = modules?.reduce((acc, module) => {
+  if (duplicateDetailModules.size > 0) {
+    throw createError({
+      statusCode: 500,
+      statusMessage:
+        "Database inconsistency detected: duplicate module detail records found. Please run the cleanup script.",
+    });
+  }
+
+  const totalModules = normalizedModules.length;
+  const completedModules = normalizedModules.filter((module) => completionsByModule.has(module.id)).length;
+  const totalXp = normalizedModules.reduce((acc, module) => acc + (module.xp_value ?? 0), 0);
+  const earnedXp = normalizedModules.reduce((acc, module) => {
     const completion = completionsByModule.get(module.id);
     return acc + (completion?.awarded_xp ?? 0);
-  }, 0) ?? 0;
+  }, 0);
 
   const completionPercent = totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0;
 
-  const nextModule = modules?.find((module) => !completionsByModule.has(module.id)) ?? null;
+  const nextModule = normalizedModules.find((module) => !completionsByModule.has(module.id)) ?? null;
   const nextDetail = nextModule ? detailByModule.get(nextModule.id) : null;
 
   return {

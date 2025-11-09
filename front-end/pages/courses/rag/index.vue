@@ -9,6 +9,7 @@ definePageMeta({
 
 const { hero, modules, capstone } = ragCourseContent;
 const { progress: courseProgressData } = useCourseProgress("rag");
+const { completedExternalIds, isModuleCompleted } = useCourseCompletions("rag");
 const courseProgressState = computed(() => courseProgressData.value);
 const staticModuleXpTotal = modules.reduce(
   (sum, module) => sum + getModuleXp(module.difficulty),
@@ -60,6 +61,7 @@ const onSelectModule = (moduleId: string) => {
           :modules="modules"
           :active-id="activeModuleId"
           :course-id="ragCourseContent.courseId"
+          :is-module-completed="isModuleCompleted"
           @select="onSelectModule"
         />
       </div>

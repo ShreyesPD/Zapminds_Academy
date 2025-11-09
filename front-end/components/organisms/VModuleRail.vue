@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useModuleListScroll } from "~/composables/useModuleListScroll";
+import { getModuleXp } from "~/utils/module-xp-values";
 
 type ModuleLite = {
   id: string;
@@ -15,6 +16,7 @@ const props = defineProps<{
   visibleCount?: number;
   header?: string;
   subhead?: string;
+  isModuleCompleted?: (moduleId: string) => { value: boolean };
 }>();
 
 const emit = defineEmits<{
@@ -29,6 +31,8 @@ const { isModuleListOpen, moduleListInner, moduleListScroll, toggleModuleList } 
   useModuleListScroll({ visibleCount: props.visibleCount ?? 5 });
 
 const onSelect = (id: string) => emit("select", id);
+
+const moduleXpValue = (difficulty: string) => getModuleXp(difficulty);
 </script>
 
 <template>
@@ -77,12 +81,16 @@ const onSelect = (id: string) => emit("select", id);
             :class="[
               $style['module-card'],
               module.id === props.activeId && $style['module-card--active'],
+              props.isModuleCompleted && props.isModuleCompleted(module.id).value && $style['module-card--completed'],
             ]"
             :aria-current="module.id === props.activeId ? 'true' : undefined"
           >
             <button type="button" :class="$style['module-card__action']" @click="onSelect(module.id)">
               <span :class="$style['module-card__number']">
-                <span>{{ (index + 1).toString().padStart(2, '0') }}</span>
+                <span v-if="!props.isModuleCompleted || !props.isModuleCompleted(module.id).value">{{ (index + 1).toString().padStart(2, '0') }}</span>
+                <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <small>module</small>
               </span>
               <div :class="$style['module-card__body']">
@@ -92,7 +100,13 @@ const onSelect = (id: string) => emit("select", id);
                 </div>
                 <strong>{{ module.title }}</strong>
                 <span :class="$style['module-card__status']">
-                  {{ module.id === props.activeId ? 'In progress' : 'Jump in' }}
+                  <template v-if="props.isModuleCompleted && props.isModuleCompleted(module.id).value">
+                    ✓ COMPLETED · +{{ moduleXpValue(module.difficulty) }} XP
+                  </template>
+                  <template v-else>
+                    +{{ moduleXpValue(module.difficulty) }} XP ·
+                    {{ module.id === props.activeId ? 'In progress' : 'Jump in' }}
+                  </template>
                 </span>
               </div>
               <span :class="$style['module-card__chevron']" aria-hidden="true">
@@ -328,5 +342,29 @@ const onSelect = (id: string) => emit("select", id);
   }
 
   &--active .module-card__status { opacity: 1; }
+
+  &--completed .module-card__action {
+    border-color: color-mix(in srgb, #10b981 50%, transparent);
+    background: color-mix(in srgb, #10b981 8%, transparent);
+
+    &:before {
+      background: linear-gradient(120deg, color-mix(in srgb, #10b981 18%, transparent), transparent 70%);
+      opacity: 0.5;
+    }
+  }
+
+  &--completed .module-card__number {
+    color: #10b981;
+    
+    svg {
+      stroke: #10b981;
+    }
+  }
+
+  &--completed .module-card__status {
+    color: #10b981;
+    opacity: 1;
+    font-weight: 600;
+  }
 }
 </style>

@@ -47,17 +47,44 @@ const defaultProgress = (): UserProgressResponse => ({
 });
 
 export const useUserProgress = () => {
-  const { data, pending, refresh, error } = useAsyncData("user-progress", async () => {
+  const fetchProgress = async (): Promise<UserProgressResponse> => {
     try {
+      // Only get token on client side
+      let token: string | undefined;
+      if (import.meta.client) {
+        const supabase = useSupabaseClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        token = session?.access_token;
+        
+        if (!token) {
+          console.warn("[user-progress] No auth token available");
+          return defaultProgress();
+        }
+      }
+      
       const response = await $fetch<UserProgressResponse>("/api/user/stats", {
         method: "GET",
+        ...(token && {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }),
       });
+      
+      if (import.meta.client) {
+        console.log("[user-progress] Fetched stats:", response?.xp?.total, "XP");
+      }
       return response ?? defaultProgress();
-    } catch (fetchError) {
+    } catch (fetchError: any) {
       console.error("[user-progress] Failed to load stats", fetchError);
+      if (fetchError?.statusCode === 401) {
+        console.warn("[user-progress] Unauthorized");
+      }
       return defaultProgress();
     }
-  }, {
+  };
+  
+  const { data, pending, refresh, error } = useAsyncData("user-progress", fetchProgress, {
     default: defaultProgress,
     server: true,
     lazy: false,

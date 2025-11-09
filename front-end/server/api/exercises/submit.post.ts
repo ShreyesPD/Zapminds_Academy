@@ -64,19 +64,36 @@ export default defineEventHandler(async (event) => {
   } else {
     const { data, error } = await supabase
       .from("module_details")
-      .select("module_id, course_id, external_id, modules:module_id(id, course_id, xp_value)")
+      .select(
+        "module_id, course_id, external_id, updated_at, modules:module_id(id, course_id, xp_value)"
+      )
       .eq("external_id", moduleIdentifier)
-      .maybeSingle();
+      .order("updated_at", { ascending: false, nullsFirst: false })
+      .limit(2);
 
     if (error) {
       throw createError({ statusCode: 500, statusMessage: `Failed to load module: ${error.message}` });
     }
 
-    if (data?.modules) {
+    if (!data || data.length === 0) {
+      throw createError({ statusCode: 404, statusMessage: "Module not found" });
+    }
+
+    // If multiple rows found, use the most recent one (already ordered by updated_at desc)
+    // Log a warning but don't fail - cleanup script can fix this later
+    if (data.length > 1) {
+      console.warn(
+        `[exercises/submit] Multiple module_detail rows found for external_id="${moduleIdentifier}". Using most recent. Consider running cleanup script.`
+      );
+    }
+
+    const [detail] = data;
+
+    if (detail?.modules) {
       moduleRow = {
-        id: data.modules.id,
-        course_id: data.modules.course_id,
-        xp_value: data.modules.xp_value,
+        id: detail.modules.id,
+        course_id: detail.modules.course_id,
+        xp_value: detail.modules.xp_value,
       };
     }
   }
@@ -85,11 +102,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: "Module not found" });
   }
 
-  const { data: moduleDetail, error: detailError } = await supabase
+  const { data: moduleDetailRows, error: detailError } = await supabase
     .from("module_details")
-    .select("difficulty, external_id")
+    .select("difficulty, external_id, updated_at")
     .eq("module_id", moduleRow.id)
-    .maybeSingle();
+    .order("updated_at", { ascending: false, nullsFirst: false })
+    .limit(2);
 
   if (detailError) {
     throw createError({
@@ -98,16 +116,46 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const existingCompletion = await supabase
+  if (!moduleDetailRows || moduleDetailRows.length === 0) {
+    throw createError({ statusCode: 404, statusMessage: "Module metadata missing" });
+  }
+
+  // If multiple rows found, use the most recent one (already ordered by updated_at desc)
+  // Log a warning but don't fail - cleanup script can fix this later
+  if (moduleDetailRows.length > 1) {
+    console.warn(
+      `[exercises/submit] Multiple module_detail rows found for module_id=${moduleRow.id}. Using most recent. Consider running cleanup script.`
+    );
+  }
+
+  const moduleDetail = moduleDetailRows[0];
+
+  const { data: existingCompletions, error: existingCompletionError } = await supabase
     .from("module_completions")
-    .select("module_id")
+    .select("module_id, completed_at")
     .eq("user_id", authUser.user.id)
     .eq("module_id", moduleRow.id)
-    .maybeSingle();
+    .order("completed_at", { ascending: false, nullsFirst: false })
+    .limit(2);
 
-  const alreadyCompleted = !!existingCompletion.data;
+  if (existingCompletionError) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: `Failed to check module completion status: ${existingCompletionError.message}`,
+    });
+  }
 
-  const baseXp = moduleRow.xp_value ?? calculateModuleXp(moduleDetail?.difficulty ?? null);
+  // If multiple completion records found, use the most recent one (already ordered by completed_at desc)
+  // Log a warning but don't fail - cleanup script can fix this later
+  if ((existingCompletions ?? []).length > 1) {
+    console.warn(
+      `[exercises/submit] Multiple completion records found for user_id=${authUser.user.id}, module_id=${moduleRow.id}. Using most recent. Consider running cleanup script.`
+    );
+  }
+
+  const alreadyCompleted = !!existingCompletions && existingCompletions.length > 0;
+
+  const baseXp = moduleRow.xp_value ?? calculateModuleXp(moduleDetail.difficulty ?? null);
 
   let awardedXp = 0;
   let xpResult = null;
@@ -137,7 +185,7 @@ export default defineEventHandler(async (event) => {
       description:
         typeof moduleIdentifier === "string"
           ? moduleIdentifier
-          : moduleDetail?.external_id ?? `module:${moduleRow.id}`,
+          : moduleDetail.external_id ?? `module:${moduleRow.id}`,
     });
 
     if (xpResult.tierChanged) {

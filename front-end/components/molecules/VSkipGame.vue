@@ -22,9 +22,11 @@ const skipGame = () => {
     currentFeaturePoints.value
   );
 
-  umTrackEvent("Game", {
-    name: "Unlocked everything",
-  });
+  if (typeof umTrackEvent === "function") {
+    umTrackEvent("Game", {
+      name: "Unlocked everything",
+    });
+  }
 
   isGameActive.value = false;
 

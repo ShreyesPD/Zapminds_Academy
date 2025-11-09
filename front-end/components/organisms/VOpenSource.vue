@@ -56,9 +56,11 @@ const toggleInstance = (index = 0) => {
   if (!hasToggled) {
     addFeaturePoints(5);
 
-    umTrackEvent("UI", {
-      name: "Used open source filters",
-    });
+    if (typeof umTrackEvent === "function") {
+      umTrackEvent("UI", {
+        name: "Used open source filters",
+      });
+    }
   }
 
   hasToggled = true;

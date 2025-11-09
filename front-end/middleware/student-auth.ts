@@ -1,7 +1,16 @@
-export default defineNuxtRouteMiddleware(() => {
-  const { isAuthenticated } = useStudentAuth();
+type AuthCookieShape = {
+  isAuthenticated?: boolean;
+};
 
-  if (!isAuthenticated.value) {
+export default defineNuxtRouteMiddleware(() => {
+  const authCookie = useCookie<AuthCookieShape>("za-student-auth", {
+    default: () => ({ isAuthenticated: false }),
+    watch: false,
+  });
+
+  const isAuthenticated = Boolean(authCookie.value?.isAuthenticated);
+
+  if (!isAuthenticated) {
     return navigateTo("/login");
   }
 });

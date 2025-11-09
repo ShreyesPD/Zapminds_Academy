@@ -9,6 +9,7 @@ definePageMeta({
 
 const { hero, modules, capstone } = mcpCourseContent;
 const { progress: courseProgressData } = useCourseProgress("mcp");
+const { completedExternalIds, isModuleCompleted } = useCourseCompletions("mcp");
 const courseProgressState = computed(() => courseProgressData.value);
 const staticModuleXpTotal = modules.reduce(
   (sum, module) => sum + getModuleXp(module.difficulty),
@@ -60,6 +61,7 @@ const onSelectModule = (moduleId: string) => {
           :modules="modules"
           :active-id="activeModuleId"
           :course-id="mcpCourseContent.courseId"
+          :is-module-completed="isModuleCompleted"
           @select="onSelectModule"
         />
       </div>

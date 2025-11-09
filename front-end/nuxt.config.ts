@@ -38,7 +38,12 @@ export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
   runtimeConfig,
-  modules: ["@nuxtjs/sanity", "lenis/nuxt", "nuxt-umami", "@nuxtjs/sitemap"],
+  modules: [
+    "@nuxtjs/sanity",
+    "lenis/nuxt",
+    ...(runtimeConfig.umamiId && runtimeConfig.umamiHost ? ["nuxt-umami"] : []),
+    "@nuxtjs/sitemap",
+  ],
   sanity: {
     projectId: siteConfig.projectId,
   },
@@ -84,12 +89,14 @@ export default defineNuxtConfig({
     "~/components/organisms",
   ],
   // https://umami.nuxt.dev/getting-started/installation
-  umami: {
-    id: runtimeConfig.umamiId,
-    host: runtimeConfig.umamiHost,
-    autoTrack: true,
-    ...(runtimeConfig.public.siteDomain && {
-      domains: [runtimeConfig.public.siteDomain],
-    }),
-  },
+  ...(runtimeConfig.umamiId && runtimeConfig.umamiHost && {
+    umami: {
+      id: runtimeConfig.umamiId,
+      host: runtimeConfig.umamiHost,
+      autoTrack: true,
+      ...(runtimeConfig.public.siteDomain && {
+        domains: [runtimeConfig.public.siteDomain],
+      }),
+    },
+  }),
 });

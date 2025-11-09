@@ -249,10 +249,15 @@ const submitCompletion = async (userCode: string) => {
           completionsData.value = null;
         }
         
-        // Also invalidate user stats cache (for overall dashboard stats)
-        const { data: statsData } = useNuxtData('user-stats');
-        if (statsData.value) {
-          statsData.value = null;
+        // Also invalidate user progress cache (for dashboard stats and tier progress)
+        clearNuxtData('user-progress');
+        
+        // Dispatch event to refresh dashboard if it's open
+        if (import.meta.client) {
+          console.log('[playground] Dispatching xp-earned event with', response.xpAwarded, 'XP');
+          window.dispatchEvent(new CustomEvent('xp-earned', {
+            detail: { xpAwarded: response.xpAwarded }
+          }));
         }
       }
     } else {

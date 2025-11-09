@@ -9,6 +9,7 @@ definePageMeta({
 
 const { hero, modules, capstone } = machineLearningSystemsContent;
 const { progress: courseProgressData } = useCourseProgress("machine-learning");
+const { completedExternalIds, isModuleCompleted } = useCourseCompletions("machine-learning");
 const courseProgressState = computed(() => courseProgressData.value);
 const staticModuleXpTotal = modules.reduce(
   (sum, module) => sum + getModuleXp(module.difficulty),
@@ -59,6 +60,7 @@ const onSelectModule = (moduleId: string) => {
           :modules="modules"
           :active-id="activeModuleId"
           :course-id="machineLearningSystemsContent.courseId"
+          :is-module-completed="isModuleCompleted"
           @select="onSelectModule"
         />
       </div>

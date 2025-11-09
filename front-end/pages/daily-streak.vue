@@ -131,6 +131,16 @@ const claimStreak = async () => {
         earnedBadgeInfo.value = response.badges.tierBadge;
         showBadgeModal.value = true;
       }
+      
+      // Invalidate user progress cache so dashboard updates
+      clearNuxtData('user-progress');
+      
+      // Dispatch event to refresh dashboard if it's open
+      if (import.meta.client) {
+        window.dispatchEvent(new CustomEvent('xp-earned', {
+          detail: { xpAwarded: response.xpAwarded }
+        }));
+      }
     }
   } catch (e: any) {
     error.value = e.data?.message || e.message || "Failed to claim streak.";

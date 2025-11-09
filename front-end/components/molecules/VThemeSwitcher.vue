@@ -13,9 +13,11 @@ const onThemeClick = () => {
   toggleTheme();
 
   if (import.meta.client) {
-    umTrackEvent("UX", {
-      name: "Switched theme",
-    });
+    if (typeof umTrackEvent === "function") {
+      umTrackEvent("UX", {
+        name: "Switched theme",
+      });
+    }
   }
 
   if (!firstThemeClick) {

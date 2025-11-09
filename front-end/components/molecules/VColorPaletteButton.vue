@@ -16,9 +16,11 @@ const onPaletteClick = () => {
   }
 
   if (import.meta.client) {
-    umTrackEvent("UX", {
-      name: "Generated new color palette",
-    });
+    if (typeof umTrackEvent === "function") {
+      umTrackEvent("UX", {
+        name: "Generated new color palette",
+      });
+    }
   }
 };
 

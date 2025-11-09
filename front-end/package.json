@@ -8,6 +8,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "seed:python": "tsx scripts/seed-python.ts",
+    "seed:all": "tsx scripts/seed-all.ts",
     "seed:courses": "tsx scripts/seed-courses.ts",
     "seed:leaderboard": "tsx scripts/seed-leaderboard.ts"
   },

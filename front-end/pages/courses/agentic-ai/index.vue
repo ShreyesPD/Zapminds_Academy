@@ -9,6 +9,7 @@ definePageMeta({
 
 const { hero, modules, capstone } = agenticAiCourseContent;
 const { progress: courseProgressData } = useCourseProgress("agentic-ai");
+const { completedExternalIds, isModuleCompleted } = useCourseCompletions("agentic-ai");
 const courseProgressState = computed(() => courseProgressData.value);
 const staticModuleXpTotal = modules.reduce(
   (sum, module) => sum + getModuleXp(module.difficulty),
@@ -59,6 +60,7 @@ const onSelectModule = (moduleId: string) => {
           :modules="modules"
           :active-id="activeModuleId"
           :course-id="agenticAiCourseContent.courseId"
+          :is-module-completed="isModuleCompleted"
           @select="onSelectModule"
         />
       </div>

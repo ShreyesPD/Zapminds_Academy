@@ -12,9 +12,36 @@ const {
   streakSummary,
   submissionsToday,
   reviewQueueCount,
+  refresh: refreshProgress,
 } = useUserProgress();
 
 const router = useRouter();
+
+// Listen for XP updates and refresh dashboard data
+let xpUpdateHandler: (() => void) | null = null;
+
+onMounted(() => {
+  // Only set up event listener on client side
+  if (import.meta.client) {
+    xpUpdateHandler = () => {
+      console.log('[dashboard] XP earned event received, refreshing progress...');
+      refreshProgress().then(() => {
+        console.log('[dashboard] Progress refreshed successfully');
+      }).catch((err) => {
+        console.error('[dashboard] Failed to refresh progress:', err);
+      });
+    };
+    
+    window.addEventListener('xp-earned', xpUpdateHandler);
+    console.log('[dashboard] XP update listener registered');
+  }
+});
+
+onBeforeUnmount(() => {
+  if (xpUpdateHandler && import.meta.client) {
+    window.removeEventListener('xp-earned', xpUpdateHandler);
+  }
+});
 
 const studentName = computed(() => profile.value.name ?? "Zapmind Student");
 const streakDays = computed(() => streakSummary.value.current ?? 0);
