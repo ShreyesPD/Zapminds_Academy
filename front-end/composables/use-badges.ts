@@ -22,9 +22,11 @@ const defaultBadges = (): BadgesResponse => ({
 });
 
 export const useBadges = () => {
+  const { authFetch } = useApiClient();
+  
   const { data, pending, refresh, error } = useAsyncData("user-badges", async () => {
     try {
-      const response = await $fetch<BadgesResponse>("/api/user/badges", {
+      const response = await authFetch<BadgesResponse>("/api/user/badges", {
         method: "GET",
       });
       return response ?? defaultBadges();
@@ -45,7 +47,7 @@ export const useBadges = () => {
 
   const setDisplayedBadge = async (badgeKey: string | null) => {
     try {
-      await $fetch("/api/user/badges/display", {
+      await authFetch("/api/user/badges/display", {
         method: "POST",
         body: { badgeKey },
       });
@@ -57,7 +59,7 @@ export const useBadges = () => {
 
   const awardBadge = async (badgeKey: string) => {
     try {
-      await $fetch("/api/user/badges/award", {
+      await authFetch("/api/user/badges/award", {
         method: "POST",
         body: { badgeKey },
       });
@@ -69,7 +71,7 @@ export const useBadges = () => {
 
   const checkForNewBadges = async () => {
     try {
-      const response = await $fetch<BadgeSummary[]>("/api/user/badges/check", {
+      const response = await authFetch<BadgeSummary[]>("/api/user/badges/check", {
         method: "POST",
       });
       if (response?.length) {

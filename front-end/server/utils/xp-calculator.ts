@@ -108,9 +108,14 @@ export const awardXp = async (payload: AwardXpPayload): Promise<AwardXpResult> =
   const previousXp = profile?.xp_total ?? 0;
   const newXp = Math.max(previousXp + amount, 0);
 
+  const { previousTier, newTier, tierChanged } = checkTierChange(previousXp, newXp);
+
   const { error: updateError } = await supabase
     .from("profiles")
-    .update({ xp_total: newXp })
+    .update({ 
+      xp_total: newXp,
+      current_tier: newTier.name,
+    })
     .eq("user_id", userId);
 
   if (updateError) {
@@ -129,7 +134,20 @@ export const awardXp = async (payload: AwardXpPayload): Promise<AwardXpResult> =
     throw new Error(`Failed to record XP transaction: ${transactionError.message}`);
   }
 
-  const { previousTier, newTier, tierChanged } = checkTierChange(previousXp, newXp);
+  // Update leaderboard in real-time
+  try {
+    const { getCurrentSeason, updateUserLeaderboardEntry } = await import("~/server/utils/leaderboard-updater");
+    const season = await getCurrentSeason();
+    if (season) {
+      await updateUserLeaderboardEntry({
+        userId,
+        seasonId: season.id,
+      });
+    }
+  } catch (leaderboardError) {
+    console.error("[xp-calculator] Failed to update leaderboard:", leaderboardError);
+    // Don't fail the XP award if leaderboard update fails
+  }
 
   const tierProgress = getProgressToNextTier(newXp);
 

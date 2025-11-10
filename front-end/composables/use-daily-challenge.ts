@@ -27,9 +27,11 @@ const defaultChallenge = (): DailyChallengeResponse => ({
 });
 
 export const useDailyChallenge = () => {
+  const { authFetch } = useApiClient();
+  
   const { data, pending, refresh, error } = useAsyncData("daily-challenge", async () => {
     try {
-      const response = await $fetch<DailyChallengeResponse>("/api/daily-challenge", {
+      const response = await authFetch<DailyChallengeResponse>("/api/daily-challenge", {
         method: "GET",
       });
       return response ?? defaultChallenge();
@@ -51,7 +53,7 @@ export const useDailyChallenge = () => {
     }
 
     try {
-      const result = await $fetch<DailyChallengeResponse>("/api/daily-challenge/claim", {
+      const result = await authFetch<DailyChallengeResponse>("/api/daily-challenge/claim", {
         method: "POST",
         body: {
           challengeId: challenge.value.challengeId,

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, computed, onMounted } from "vue";
 import { useStudentAuth } from "~/composables/use-auth";
 import { getTierByName } from "~/utils/xp-tiers";
 
@@ -63,7 +64,8 @@ const fetchLeaderboard = async () => {
   error.value = null;
   
   try {
-    const response = await $fetch<LeaderboardResponse>("/api/leaderboard/current", {
+    const { authFetch } = useApiClient();
+    const response = await authFetch<LeaderboardResponse>("/api/leaderboard/current", {
       method: "GET",
     });
 
@@ -82,14 +84,14 @@ const fetchLeaderboard = async () => {
         handle: `@${entry.display_name.toLowerCase().replace(/\s+/g, ".")}`,
         avatar: initials,
         xp: entry.xp_total,
-        weeklyXp: Math.floor(entry.xp_total * 0.15), // Estimate weekly as 15% of total
-        streak: 0, // TODO: Add streak data to API
+        weeklyXp: entry.xp_weekly,
+        streak: entry.streak,
         projects: 0, // TODO: Add project count to API
         weeklyProjects: 0, // TODO: Add weekly projects to API
-        modules: 0, // TODO: Add module count to API
+        modules: entry.modules_completed,
         moduleTarget: 60,
-        weeklyModules: 0, // TODO: Add weekly modules to API
-        badges: [], // TODO: Fetch badges from API
+        weeklyModules: entry.modules_weekly,
+        badges: entry.badge_icon ? [entry.badge_icon] : [],
         trend: "steady" as const,
         tier: entry.tier,
         tier_icon: entry.tier_icon,
@@ -266,6 +268,14 @@ const switchMode = (mode: "overall" | "weekly") => {
           </div>
 
           <div :class="$style['hero-actions']">
+            <button
+              type="button"
+              :class="$style['hero-button']"
+              :disabled="isLoading"
+              @click="fetchLeaderboard"
+            >
+              {{ isLoading ? 'Refreshing...' : 'Refresh Rankings' }}
+            </button>
             <NuxtLink to="/" :class="$style['hero-button']">Back to dashboard</NuxtLink>
           </div>
         </div>

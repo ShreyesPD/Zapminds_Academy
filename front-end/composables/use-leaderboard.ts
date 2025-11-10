@@ -6,9 +6,12 @@ export type LeaderboardEntryResponse = {
   user_id: string;
   display_name: string | null;
   xp_total: number;
+  xp_weekly: number;
+  modules_completed: number;
+  modules_weekly: number;
   tier: string | null;
   rank: number;
-  streak: number | null;
+  streak: number;
   badge_icon: string | null;
 };
 
@@ -30,13 +33,14 @@ const defaultLeaderboard = (): LeaderboardResponse => ({
 });
 
 export const useLeaderboard = (initialView: LeaderboardView = "overall") => {
+  const { authFetch } = useApiClient();
   const view = ref<LeaderboardView>(initialView);
 
   const { data, pending, refresh, error } = useAsyncData(
     () => `leaderboard:${view.value}`,
     async () => {
       try {
-        const response = await $fetch<LeaderboardResponse>("/api/leaderboard/current", {
+        const response = await authFetch<LeaderboardResponse>("/api/leaderboard/current", {
           method: "GET",
           query: {
             view: view.value,

@@ -47,28 +47,12 @@ const defaultProgress = (): UserProgressResponse => ({
 });
 
 export const useUserProgress = () => {
+  const { authFetch } = useApiClient();
+  
   const fetchProgress = async (): Promise<UserProgressResponse> => {
     try {
-      // Only get token on client side
-      let token: string | undefined;
-      if (import.meta.client) {
-        const supabase = useSupabaseClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        token = session?.access_token;
-        
-        if (!token) {
-          console.warn("[user-progress] No auth token available");
-          return defaultProgress();
-        }
-      }
-      
-      const response = await $fetch<UserProgressResponse>("/api/user/stats", {
+      const response = await authFetch<UserProgressResponse>("/api/user/stats", {
         method: "GET",
-        ...(token && {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }),
       });
       
       if (import.meta.client) {

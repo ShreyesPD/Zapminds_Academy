@@ -421,7 +421,7 @@ const submitCompletion = async (userCode: string) => {
 
 .editor {
   display: grid;
-  grid-template-columns: minmax(0, 1.75fr) minmax(16rem, 1fr);
+  grid-template-columns: minmax(0, 2.5fr) minmax(14rem, 0.9fr);
   gap: 1.5rem;
 
   @media screen and (max-width: 1100px) {
@@ -430,7 +430,7 @@ const submitCompletion = async (userCode: string) => {
 }
 
 .editor-canvas {
-  height: clamp(30rem, 70vh, 36rem);
+  height: clamp(32rem, 75vh, 52rem);
   border-radius: 1.25rem;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--foreground-color) 12%, transparent);
@@ -450,9 +450,12 @@ const submitCompletion = async (userCode: string) => {
   gap: 1rem;
   border-radius: 1.25rem;
   border: 1px solid color-mix(in srgb, var(--foreground-color) 12%, transparent);
-  padding: 1.5rem;
+  padding: 1.25rem;
   background: color-mix(in srgb, var(--background-color) 96%, transparent);
   box-shadow: 0 15px 40px color-mix(in srgb, #000 16%, transparent);
+  align-self: start;
+  max-height: clamp(18rem, 38vh, 24rem);
+  overflow: hidden;
 
   h4 {
     margin: 0;
@@ -468,6 +471,16 @@ const submitCompletion = async (userCode: string) => {
     padding: 0;
     display: grid;
     gap: 1rem;
+    max-height: 12rem;
+    overflow: auto;
+  }
+
+  @media screen and (max-width: 1100px) {
+    max-height: none;
+
+    ul {
+      max-height: none;
+    }
   }
 }
 
