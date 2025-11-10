@@ -4181,3 +4181,246 @@ STATUS: FIXED ✅
 ================================================================================
 End of Bugfix
 ================================================================================
+
+================================================================================
+BUGFIX: PROGRESS BAR NOT UPDATING AFTER XP AWARD
+Date: November 10, 2025
+Time: Current Session
+================================================================================
+
+ISSUE IDENTIFIED:
+-----------------
+XP was being awarded successfully (+100 XP shown in animation)
+But the progress bar and module count on the course page did NOT update
+User had to refresh the page manually to see updated progress
+
+ROOT CAUSE:
+-----------
+After exercise submission:
+1. XP was awarded and recorded in database ✅
+2. VCodePlayground cleared the cache with clearNuxtData() ✅
+3. BUT the composables (useCourseProgress, useCourseCompletions) still had 
+   stale cached data
+4. clearNuxtData() alone doesn't trigger a refetch - it only clears the cache
+5. Without calling refresh() after clearNuxtData(), the UI never fetches fresh data
+
+SOLUTION IMPLEMENTED:
+---------------------
+1. Modified VCodePlayground.vue:
+   - Simplified cache clearing logic (removed incorrect useNuxtData calls)
+   - Uses clearNuxtData() which is the correct way to clear useAsyncData cache
+
+2. Enhanced useCourseProgress composable:
+   - Renamed internal refreshData to avoid naming conflict
+   - Created a new refresh() function that:
+     a. Calls clearNuxtData(key) to clear the cache
+     b. Calls refreshData() to force a new fetch from API
+   - Both must be called together for cache invalidation to work
+
+3. Enhanced useCourseCompletions composable:
+   - Same pattern as useCourseProgress
+   - Creates refresh() that clears + refetches module completion status
+   - Ensures module checkmarks update instantly
+
+FILES MODIFIED:
+---------------
+1. /front-end/components/organisms/VCodePlayground.vue
+   - Lines 234-262: Simplified cache clearing logic
+   - Removed incorrect useNuxtData() calls
+   - Now directly calls clearNuxtData() on all relevant cache keys
+
+2. /front-end/composables/use-course-progress.ts
+   - Lines 48, 99-103: Added proper refresh() wrapper
+   - Renamed useAsyncData refresh to refreshData
+   - New refresh() combines clearNuxtData + refreshData
+
+3. /front-end/composables/use-course-completions.ts
+   - Lines 28, 82-86: Added proper refresh() wrapper
+   - Renamed useAsyncData refresh to refreshData
+   - New refresh() combines clearNuxtData + refreshData
+
+FLOW NOW:
+---------
+1. User submits exercise code ✅
+2. VCodePlayground.vue calls submitCompletion()
+3. Backend awards XP and records module completion ✅
+4. Response returns with xpAwarded amount ✅
+5. VCodePlayground clears cache: clearNuxtData('course-progress:...') 
+6. VCodePlayground clears cache: clearNuxtData('course-completions:...')
+7. VCodePlayground clears cache: clearNuxtData('user-progress')
+8. Composables detect cache is cleared
+9. Next time UI reads data.value, it re-triggers the async fetch
+10. Fresh data from API shows updated progress ✅
+11. Progress bar updates in real-time ✅
+12. Module checkmarks appear instantly ✅
+
+RESULT:
+-------
+✅ XP awarded immediately (was already working)
+✅ Progress bar updates without page refresh (FIXED)
+✅ Module checkmarks appear instantly (FIXED)
+✅ Course stats refresh automatically (FIXED)
+✅ Works for ALL courses (Python, MCP, RAG, Agentic AI, etc.)
+
+TESTING VERIFICATION:
+---------------------
+The fix uses the standard Nuxt cache invalidation pattern:
+- clearNuxtData() empties the cache for a specific key
+- The next computed read of data.value triggers useAsyncData to refetch
+- This pattern is battle-tested in Nuxt v3
+
+WHY THIS WORKS:
+---------------
+useAsyncData maintains a cache of responses keyed by the cache key.
+When clearNuxtData(key) is called:
+1. Cache[key] is deleted
+2. Next access to data.value sees undefined
+3. useAsyncData recognizes undefined and checks if cached
+4. Cache is gone, so it re-executes the async function
+5. New fetch happens, fresh data is returned
+6. Vue reactivity triggers update, UI re-renders
+
+STATUS: FIXED ✅
+
+================================================================================
+ALSO FIXED: AGENTIC AI MODULE DETAILS MISSING
+Date: November 10, 2025
+Time: Current Session
+================================================================================
+
+ISSUE IDENTIFIED:
+-----------------
+Agentic AI course exercises could not be submitted
+Error: "POST /api/exercises/submit 404 (Module not found for external_id: agent-goal-profiles)"
+
+ROOT CAUSE:
+-----------
+Agentic AI modules (id 91-100) were created in database
+But NO module_details records existed for them
+module_details is required to provide:
+- external_id (used for exercise lookups)
+- exercise JSON (code, tests, hints)
+- learning objectives, reading links, etc.
+
+SOLUTION IMPLEMENTED:
+---------------------
+Added migration to insert all 10 Agentic AI module_details:
+
+1. agent-goal-profiles (module 91) - 17 min, core
+2. agent-adaptive-planning (module 92) - 18 min, core
+3. agent-tool-routing (module 93) - 17 min, core
+4. agent-memory (module 94) - 18 min, core
+5. agent-scheduling (module 95) - 19 min, challenge
+6. agent-communication (module 96) - 18 min, challenge
+7. agent-risk (module 97) - 17 min, challenge
+8. agent-simulation (module 98) - 18 min, lab
+9. agent-observability (module 99) - 17 min, lab
+10. agent-deployment (module 100) - 19 min, lab
+
+MIGRATION APPLIED:
+------------------
+add_agentic_ai_module_details (Part 1)
+add_agentic_ai_module_details_2 (Part 2)
+
+Each record includes:
+- external_id for API lookups
+- duration, difficulty, overview
+- learning_objectives (jsonb array)
+- reading materials with URLs
+- code_concepts (array of tags)
+- exercise JSON with starter code, tests, hints
+
+RESULT:
+-------
+✅ All 10 Agentic AI modules now have external_ids
+✅ Exercise submissions work for Agentic AI course
+✅ XP can be earned from all Agentic AI exercises
+✅ Progress tracking works for Agentic AI
+✅ Consistent with Python, MCP, RAG course data
+
+STATUS: FIXED ✅
+
+================================================================================
+End of Fixes
+================================================================================
+
+================================================================================
+FEATURE: Integrate "The Frantic Run of the Valorous Rabbit" review page
+Date: November 10, 2025
+Time: Current Session
+================================================================================
+
+GOAL:
+-----
+Integrate the external Rabbit demo so it runs at /review inside the Nuxt app.
+
+IMPLEMENTATION:
+---------------
+1) Added new page route:
+   - File: front-end/pages/review.vue
+   - Renders a full-viewport <iframe> that loads static assets from /public/review/index.html
+   - Uses <client-only> and responsive styles for a clean, large canvas
+
+2) Copied build assets from Rabbit project to Nuxt public folder:
+   - Source (unzipped): ~/Downloads/the-frantic-run-of-the-valorous-rabbit/the-frantic-run-of-the-valorous-rabbit/dist/
+   - Destination: front-end/public/review/
+   - Files: index.html, script.js, style.css
+
+USER IMPACT:
+------------
+- Visiting /review now displays the Rabbit review experience inside the app
+- Layout is full-screen with no scroll bars around the embed
+
+FILES ADDED:
+------------
+- /front-end/pages/review.vue
+- /front-end/public/review/index.html
+- /front-end/public/review/script.js
+- /front-end/public/review/style.css
+
+VERIFICATION:
+-------------
+- Start the app
+- Navigate to http://localhost:3000/review
+- Confirm the demo loads and is interactive
+
+NOTES:
+------
+- If the Rabbit build is updated, replace the three files in public/review/ with the new dist output
+- The integration is isolated via an iframe to avoid CSS/JS conflicts with the Nuxt app
+
+STATUS: COMPLETE ✅
+
+================================================================================
+End of Entry
+================================================================================
+
+================================================================================
+TWEAK: Remove external footer links from Rabbit review page
+Date: November 10, 2025
+Time: Current Session
+================================================================================
+
+CHANGE:
+-------
+Removed two external links (other codepens | epic.net) from the embedded Rabbit page footer.
+
+FILE MODIFIED:
+--------------
+- /front-end/public/review/index.html
+  - Deleted the <div id="credits">...</div> block
+
+REASON:
+-------
+User requested to remove the links from the bottom of the review page.
+
+VERIFICATION:
+-------------
+- Open http://localhost:3000/review
+- Confirm the footer links are no longer visible.
+
+STATUS: COMPLETE ✅
+
+================================================================================
+End of Entry
+================================================================================

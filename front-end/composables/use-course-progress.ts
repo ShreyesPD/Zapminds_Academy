@@ -45,7 +45,7 @@ export const useCourseProgress = (courseSlug: string) => {
   const dbSlug = slugMapping[courseSlug] || courseSlug;
   const key = `course-progress:${courseSlug}`;
 
-  const { data, pending, refresh, error } = useAsyncData(key, async () => {
+  const { data, pending, refresh: refreshData, error } = useAsyncData(key, async () => {
     if (!courseSlug) {
       return createDefaultCourseProgress(courseSlug);
     }
@@ -95,6 +95,12 @@ export const useCourseProgress = (courseSlug: string) => {
   const remainingXp = computed(() =>
     Math.max(progress.value.totalXp - progress.value.earnedXp, 0)
   );
+
+  // Add a refresh function that clears cache and refetches
+  const refresh = async () => {
+    clearNuxtData(key);
+    await refreshData();
+  };
 
   return {
     progress,

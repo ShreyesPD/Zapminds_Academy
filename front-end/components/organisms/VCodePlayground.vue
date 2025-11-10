@@ -237,19 +237,9 @@ const submitCompletion = async (userCode: string) => {
       const courseSlug = route.path.split('/courses/')[1]?.split('/')[0];
       
       if (courseSlug) {
-        // Clear the cached course progress data (for dashboard)
-        const { data: progressData } = useNuxtData(`course-progress:${courseSlug}`);
-        if (progressData.value) {
-          progressData.value = null;
-        }
-        
-        // Clear the cached course completions data (for module list UI)
-        const { data: completionsData } = useNuxtData(`course-completions:${courseSlug}`);
-        if (completionsData.value) {
-          completionsData.value = null;
-        }
-        
-        // Also invalidate user progress cache (for dashboard stats and tier progress)
+        // Clear all relevant cache keys to force refetch
+        clearNuxtData(`course-progress:${courseSlug}`);
+        clearNuxtData(`course-completions:${courseSlug}`);
         clearNuxtData('user-progress');
         
         // Dispatch event to refresh dashboard if it's open

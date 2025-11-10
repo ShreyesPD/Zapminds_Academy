@@ -25,7 +25,7 @@ export const useCourseCompletions = (courseSlug: string) => {
   const key = `course-completions:${courseSlug}`;
   const completedExternalIds = ref<string[]>([]);
 
-  const { data, pending, refresh, error } = useAsyncData(
+  const { data, pending, refresh: refreshData, error } = useAsyncData(
     key,
     async () => {
       if (!courseSlug) {
@@ -77,6 +77,12 @@ export const useCourseCompletions = (courseSlug: string) => {
 
   const isModuleCompleted = (externalId: string) => {
     return computed(() => completedExternalIds.value.includes(externalId));
+  };
+
+  // Add a refresh function that clears cache and refetches
+  const refresh = async () => {
+    clearNuxtData(key);
+    await refreshData();
   };
 
   return {
