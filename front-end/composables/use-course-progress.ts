@@ -27,6 +27,22 @@ const createDefaultCourseProgress = (courseSlug: string): CourseProgressResponse
 });
 
 export const useCourseProgress = (courseSlug: string) => {
+  // Map short slugs to database slugs
+  const slugMapping: Record<string, string> = {
+    'python': 'python',
+    'machine-learning': 'machine-learning-systems',
+    'ml': 'machine-learning-systems',
+    'deep-learning': 'deep-learning-studio',
+    'dl': 'deep-learning-studio',
+    'llm-engineering': 'llm-engineering-lab',
+    'llm': 'llm-engineering-lab',
+    'rag': 'retrieval-augmented-generation',
+    'mcp': 'model-context-protocol',
+    'agentic-ai': 'agentic-ai-applications',
+    'agentic': 'agentic-ai-applications',
+  };
+
+  const dbSlug = slugMapping[courseSlug] || courseSlug;
   const key = `course-progress:${courseSlug}`;
 
   const { data, pending, refresh, error } = useAsyncData(key, async () => {
@@ -53,7 +69,7 @@ export const useCourseProgress = (courseSlug: string) => {
         return createDefaultCourseProgress(courseSlug);
       }
 
-      const response = await $fetch<CourseProgressResponse>(`/api/courses/${courseSlug}/progress`, {
+      const response = await $fetch<CourseProgressResponse>(`/api/courses/${dbSlug}/progress`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,

@@ -6,6 +6,22 @@ export type CourseCompletionsResponse = {
 };
 
 export const useCourseCompletions = (courseSlug: string) => {
+  // Map short slugs to database slugs
+  const slugMapping: Record<string, string> = {
+    'python': 'python',
+    'machine-learning': 'machine-learning-systems',
+    'ml': 'machine-learning-systems',
+    'deep-learning': 'deep-learning-studio',
+    'dl': 'deep-learning-studio',
+    'llm-engineering': 'llm-engineering-lab',
+    'llm': 'llm-engineering-lab',
+    'rag': 'retrieval-augmented-generation',
+    'mcp': 'model-context-protocol',
+    'agentic-ai': 'agentic-ai-applications',
+    'agentic': 'agentic-ai-applications',
+  };
+
+  const dbSlug = slugMapping[courseSlug] || courseSlug;
   const key = `course-completions:${courseSlug}`;
   const completedExternalIds = ref<string[]>([]);
 
@@ -36,7 +52,7 @@ export const useCourseCompletions = (courseSlug: string) => {
         }
 
         const response = await $fetch<CourseCompletionsResponse>(
-          `/api/courses/${courseSlug}/completions`,
+          `/api/courses/${dbSlug}/completions`,
           {
             method: "GET",
             headers: {

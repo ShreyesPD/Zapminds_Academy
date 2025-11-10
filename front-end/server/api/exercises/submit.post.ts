@@ -62,38 +62,39 @@ export default defineEventHandler(async (event) => {
     }
     moduleRow = data;
   } else {
-    const { data, error } = await supabase
+    // First find the module_details by external_id
+    const { data: detailsData, error: detailsError } = await supabase
       .from("module_details")
-      .select(
-        "module_id, course_id, external_id, updated_at, modules:module_id(id, course_id, xp_value)"
-      )
+      .select("module_id, course_id, external_id")
       .eq("external_id", moduleIdentifier)
-      .order("updated_at", { ascending: false, nullsFirst: false })
-      .limit(2);
+      .limit(1);
 
-    if (error) {
-      throw createError({ statusCode: 500, statusMessage: `Failed to load module: ${error.message}` });
+    if (detailsError) {
+      throw createError({ statusCode: 500, statusMessage: `Failed to load module details: ${detailsError.message}` });
     }
 
-    if (!data || data.length === 0) {
-      throw createError({ statusCode: 404, statusMessage: "Module not found" });
+    if (!detailsData || detailsData.length === 0) {
+      throw createError({ statusCode: 404, statusMessage: `Module not found for external_id: ${moduleIdentifier}` });
     }
 
-    // If multiple rows found, use the most recent one (already ordered by updated_at desc)
-    // Log a warning but don't fail - cleanup script can fix this later
-    if (data.length > 1) {
-      console.warn(
-        `[exercises/submit] Multiple module_detail rows found for external_id="${moduleIdentifier}". Using most recent. Consider running cleanup script.`
-      );
+    const moduleDetail = detailsData[0];
+
+    // Now fetch the module data
+    const { data: moduleData, error: moduleError } = await supabase
+      .from("modules")
+      .select("id, course_id, xp_value")
+      .eq("id", moduleDetail.module_id)
+      .maybeSingle();
+
+    if (moduleError) {
+      throw createError({ statusCode: 500, statusMessage: `Failed to load module: ${moduleError.message}` });
     }
 
-    const [detail] = data;
-
-    if (detail?.modules) {
+    if (moduleData) {
       moduleRow = {
-        id: detail.modules.id,
-        course_id: detail.modules.course_id,
-        xp_value: detail.modules.xp_value,
+        id: moduleData.id,
+        course_id: moduleData.course_id,
+        xp_value: moduleData.xp_value,
       };
     }
   }
