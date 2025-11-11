@@ -699,3 +699,31 @@ STATUS: ✅ FIXED - Secrets scanner satisfied, runtime still receives necessary 
 
 ================================================================================
 End of Entry
+================================================================================
+HOTFIX: Netlify Secret Scanner - SUPABASE_URL Flagged
+Date: November 11, 2025
+Time: November 11, 2025 21:47 IST
+================================================================================
+
+ISSUE:
+------
+Netlify secrets scanner still failing because the `SUPABASE_URL` environment variable (same value as the public Supabase URL) appears in compiled output.
+
+ACTION TAKEN:
+-------------
+- Updated `netlify.toml` `SECRETS_SCAN_OMIT_KEYS` to include `SUPABASE_URL`, acknowledging that this key is intentionally public and should not abort the build.
+
+FOLLOW-UP:
+----------
+- Confirm Netlify deploy passes secrets scan.
+- Keep sensitive keys (service role) server-side only; no further action needed unless new keys trigger the scan.
+
+FILES MODIFIED:
+---------------
+- netlify.toml
+- dev_documentation.txt (this entry)
+
+STATUS: ✅ Mitigated - Known public Supabase URL now ignored by scanner.
+
+================================================================================
+End of Entry
