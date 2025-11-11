@@ -1,0 +1,23 @@
+# Netlify build configuration for Zapminds Academy
+# Front-end lives in the front-end/ subdirectory
+
+[build]
+  # Set base directory to front-end where package.json lives
+  base = "front-end"
+  
+  # Build command for production
+  command = "npm run build"
+  
+  # Publish the Nuxt output directory
+  publish = "front-end/.output/public"
+
+[build.environment]
+  # Node version for build
+  NODE_VERSION = "20"
+
+# Redirect rules (optional - add as needed)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
