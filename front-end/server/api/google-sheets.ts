@@ -13,10 +13,16 @@ const generateFakeData = (): InvoicesData => {
 };
 
 export default defineEventHandler(async (event): Promise<InvoicesData> => {
-  const runtimeConfig = useRuntimeConfig();
   const range = "Total!A:B";
+  const invoiceSheetId = process.env.NUXT_INVOICE_SHEET_ID;
+  const googleApiKey = process.env.NUXT_GOOGLE_API_KEY;
 
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${runtimeConfig.invoiceSheetId}/values/${range}?key=${runtimeConfig.googleAPIKey}`;
+  if (!invoiceSheetId || !googleApiKey) {
+    console.warn("[google-sheets] Missing NUXT_INVOICE_SHEET_ID or NUXT_GOOGLE_API_KEY env vars");
+    return generateFakeData();
+  }
+
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${invoiceSheetId}/values/${range}?key=${googleApiKey}`;
 
   try {
     const response = await fetch(url);

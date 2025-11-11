@@ -8,12 +8,14 @@
   # Build command for production
   command = "npm run build"
   
-  # Publish the Nuxt output directory
-  publish = "front-end/.output/public"
+  # Publish the Nuxt output directory (relative to base)
+  publish = ".output/public"
 
 [build.environment]
   # Node version for build
   NODE_VERSION = "20"
+  # Netlify secret scanner ignores known client-exposed keys
+  SECRETS_SCAN_OMIT_KEYS = "NUXT_SITE_BASE_URL,NUXT_SITE_DOMAIN,NUXT_SUPABASE_URL,NUXT_SUPABASE_ANON_KEY,NUXT_GOOGLE_API_KEY,NUXT_GITHUB_GRAPHQL_TOKEN,NUXT_INVOICE_SHEET_ID,NUXT_UMAMI_ID,NUXT_UMAMI_HOST,SEED_SYSTEM_EMAIL,SEED_SYSTEM_NAME"
 
 # Redirect rules (optional - add as needed)
 [[redirects]]

@@ -41,7 +41,7 @@ const generateFakeData = (): GithubContribution[] => {
 
 export default defineEventHandler(
   async (event): Promise<GithubContribution[]> => {
-    const runtimeConfig = useRuntimeConfig();
+    const githubAccessToken = process.env.NUXT_GITHUB_GRAPHQL_TOKEN;
     const username = "martinlaxenaire";
 
     const query = `
@@ -74,12 +74,17 @@ export default defineEventHandler(
     }
   `;
 
+    if (!githubAccessToken) {
+      console.warn("[github] Missing NUXT_GITHUB_GRAPHQL_TOKEN env var");
+      return generateFakeData();
+    }
+
     try {
       const response = await fetch(GITHUB_GRAPHQL_API, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${runtimeConfig.githubAccessToken}`,
+          Authorization: `Bearer ${githubAccessToken}`,
         },
         body: JSON.stringify({ query }),
       });

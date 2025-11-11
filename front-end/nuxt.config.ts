@@ -1,15 +1,10 @@
 import { hoistUseStatements } from "./utils/hoist-use-statements";
 import { siteConfig } from "../studio/site-config";
 
+const umamiId = process.env.NUXT_UMAMI_ID;
+const umamiHost = process.env.NUXT_UMAMI_HOST;
+
 const runtimeConfig = {
-  googleAPIKey: process.env.NUXT_GOOGLE_API_KEY,
-  invoiceSheetId: process.env.NUXT_INVOICE_SHEET_ID,
-  githubAccessToken: process.env.NUXT_GITHUB_GRAPHQL_TOKEN,
-  umamiId: process.env.NUXT_UMAMI_ID,
-  umamiHost: process.env.NUXT_UMAMI_HOST,
-  supabase: {
-    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-  },
   public: {
     siteBaseUrl: process.env.NUXT_SITE_BASE_URL,
     siteDomain: process.env.NUXT_SITE_DOMAIN,
@@ -41,7 +36,7 @@ export default defineNuxtConfig({
   modules: [
     "@nuxtjs/sanity",
     "lenis/nuxt",
-    ...(runtimeConfig.umamiId && runtimeConfig.umamiHost ? ["nuxt-umami"] : []),
+    ...(umamiId && umamiHost ? ["nuxt-umami"] : []),
     "@nuxtjs/sitemap",
   ],
   sanity: {
@@ -89,10 +84,10 @@ export default defineNuxtConfig({
     "~/components/organisms",
   ],
   // https://umami.nuxt.dev/getting-started/installation
-  ...(runtimeConfig.umamiId && runtimeConfig.umamiHost && {
+  ...(umamiId && umamiHost && {
     umami: {
-      id: runtimeConfig.umamiId,
-      host: runtimeConfig.umamiHost,
+      id: umamiId,
+      host: umamiHost,
       autoTrack: true,
       ...(runtimeConfig.public.siteDomain && {
         domains: [runtimeConfig.public.siteDomain],

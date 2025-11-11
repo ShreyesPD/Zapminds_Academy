@@ -22,7 +22,7 @@ const resolveConfig = () => {
   const config = useRuntimeConfig();
   const url = config.public?.supabase?.url;
   const anonKey = config.public?.supabase?.anonKey;
-  const serviceRoleKey = config.supabase?.serviceRoleKey;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url) {
     console.error("Missing Supabase URL. Set NUXT_SUPABASE_URL in your environment.");
