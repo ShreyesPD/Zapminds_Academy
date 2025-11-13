@@ -1,6 +1,6 @@
 # netlify.toml (temporary)
 [build]
-  command = "cd front-end && npm run build"
+  command = "npm run build"
   publish = "front-end/.output/public"
   functions = "front-end/.netlify/functions-internal"
 
