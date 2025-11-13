@@ -96,8 +96,8 @@ export interface SeedCourseOptions {
   uiElements?: unknown;
 }
 
-const SYSTEM_USER_EMAIL = process.env.SEED_SYSTEM_EMAIL ?? "system@zapminds.academy";
-const SYSTEM_USER_NAME = process.env.SEED_SYSTEM_NAME ?? "Zapminds Academy System";
+const SYSTEM_USER_EMAIL = process.env.SEED_SYSTEM_EMAIL;
+const SYSTEM_USER_NAME = process.env.SEED_SYSTEM_NAME ;
 
 const findSystemUser = async (): Promise<User | null> => {
   const existing = await supabase.auth.admin.listUsers({

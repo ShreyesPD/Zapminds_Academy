@@ -9,8 +9,8 @@ import { mcpCourseContent } from '~/utils/mcp-course-data';
 import { ragCourseContent } from '~/utils/rag-course-data';
 import { agenticAiCourseContent } from '~/utils/agentic-ai-course-data';
 
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
