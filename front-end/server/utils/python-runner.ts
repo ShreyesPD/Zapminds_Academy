@@ -94,13 +94,19 @@ const formatSyntaxError = (details: any) => {
   }
 
   const line = typeof details.line === "number" ? details.line : undefined;
-  const offset = typeof details.offset === "number" ? details.offset : undefined;
+  const offset =
+    typeof details.offset === "number" ? details.offset : undefined;
   const message = details.message ?? "invalid syntax";
-  const text = typeof details.text === "string" ? details.text.replace(/\s+$/, "") : "";
+  const text =
+    typeof details.text === "string" ? details.text.replace(/\s+$/, "") : "";
   const pointer =
-    typeof offset === "number" && offset > 0 ? `${" ".repeat(Math.max(offset - 1, 0))}^` : "";
+    typeof offset === "number" && offset > 0
+      ? `${" ".repeat(Math.max(offset - 1, 0))}^`
+      : "";
 
-  let formatted = `SyntaxError${line ? ` on line ${line}` : ""}${offset ? `, column ${offset}` : ""}: ${message}`;
+  let formatted = `SyntaxError${line ? ` on line ${line}` : ""}${
+    offset ? `, column ${offset}` : ""
+  }: ${message}`;
   if (text) {
     formatted += `\n${text}`;
     if (pointer) {
@@ -121,16 +127,20 @@ export const runPythonTests = async (
     const script = buildScript(code, test.assertion);
 
     try {
-      const { stdout } = await execFileAsync("python3", ["-c", script], {
+      // const { stdout } = await execFileAsync("python3", ["-c", script], {
+      //   timeout: PYTHON_TIMEOUT,
+      //   maxBuffer: 1024 * 1024,
+      // });
+
+      // Pick interpreter dynamically
+      const pythonCmd = process.platform === "win32" ? "python" : "python3";
+
+      const { stdout } = await execFileAsync(pythonCmd, ["-c", script], {
         timeout: PYTHON_TIMEOUT,
         maxBuffer: 1024 * 1024,
       });
 
-      const payloadLine = stdout
-        .trim()
-        .split("\n")
-        .filter(Boolean)
-        .pop();
+      const payloadLine = stdout.trim().split("\n").filter(Boolean).pop();
       const payload = payloadLine ? JSON.parse(payloadLine) : {};
       const hasSyntaxError = Boolean(payload.syntax_error);
       const hasError = Boolean(payload.error) || hasSyntaxError;
@@ -170,14 +180,12 @@ export const runPythonTests = async (
           ? hasSyntaxError
             ? formatSyntaxError(payload.syntax_error)
             : payload.error
-          : capturedStdout || (rawResult !== undefined ? String(rawResult) : "Success"),
+          : capturedStdout ||
+            (rawResult !== undefined ? String(rawResult) : "Success"),
       });
     } catch (error: any) {
       const message =
-        error?.stderr ||
-        error?.stdout ||
-        error?.message ||
-        "Execution failed.";
+        error?.stderr || error?.stdout || error?.message || "Execution failed.";
       execution.push({
         id: test.id,
         status: "failed",
