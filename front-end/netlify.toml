@@ -1,0 +1,11 @@
+# netlify.toml (temporary)
+[build]
+  command = "cd front-end && npm run build"
+  publish = "front-end/.output/public"
+  functions = "front-end/.netlify/functions-internal"
+
+[build.environment]
+  # Keys to ignore in Netlify's secrets scan (comma-separated)
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_SERVICE_ROLE_KEY,SUPABASE_URL,NUXT_SUPABASE_URL,NUXT_SITE_BASE_URL,NUXT_UMAMI_HOST,NUXT_UMAMI_ID,NUXT_SUPABASE_ANON_KEY"
+  # (Optional) Paths to omit from scanning
+  SECRETS_SCAN_OMIT_PATHS = ".nuxt/**,.output/**,.netlify/**,dist/**"
