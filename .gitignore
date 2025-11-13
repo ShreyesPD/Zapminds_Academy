@@ -2,3 +2,9 @@
 /front-end/public/robots.txt
 /front-end/public/.htaccess
 front-end/middleware/DBpass.txt
+
+
+.nuxt
+.output
+dist
+.netlify
